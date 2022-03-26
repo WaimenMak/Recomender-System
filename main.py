@@ -14,6 +14,10 @@ import json
 from surprise import dump
 from surprise import KNNBasic
 from surprise import Dataset
+from entities.Movie import Movie
+
+import  recommendationAlgorithms.content_based_recommendation as content_based
+
 
 app = FastAPI()
 app.add_middleware(
@@ -26,17 +30,12 @@ app.add_middleware(
 
 # =======================DATA=========================
 data = pd.read_csv("movie_info.csv")
+genre_list =["Action", "Adventure", "Animation", "Children", "Comedy", "Crime","Documentary", "Drama", "Fantasy", "Film_Noir", "Horror", "Musical", "Mystery","Romance", "Sci_Fi", "Thriller", "War", "Western"]
 
 """
 =================== Body =============================
 """
 
-
-class Movie(BaseModel):
-    movie_id: int
-    movie_title: str
-    release_date: str
-    score: int
 
 
 # == == == == == == == == == API == == == == == == == == == == =
@@ -65,22 +64,29 @@ def get_movies(genre: list):
     return json.loads(results.to_json(orient="records"))
 
 
+# @app.post("/api/recommend")
+# def get_recommend(movies: List[Movie]):
+#     # print(movies)
+#     iid = str(sorted(movies, key=lambda i: i.score, reverse=True)[0].movie_id)
+#     score = int(sorted(movies, key=lambda i: i.score, reverse=True)[0].score)
+#     res = get_initial_items(iid,score)
+#     res = [int(i) for i in res]
+#     if len(res) > 12:
+#         res = res[:12]
+#     print(res)
+#     rec_movies = data.loc[data['movie_id'].isin(res)]
+#     print(rec_movies)
+#     rec_movies.loc[:, 'like'] = None
+#     results = rec_movies.loc[:, ['movie_id', 'movie_title', 'release_date', 'poster_url', 'like']]
+#     return json.loads(results.to_json(orient="records"))
+
+
 @app.post("/api/recommend")
 def get_recommend(movies: List[Movie]):
-    # print(movies)
-    iid = str(sorted(movies, key=lambda i: i.score, reverse=True)[0].movie_id)
-    score = int(sorted(movies, key=lambda i: i.score, reverse=True)[0].score)
-    res = get_initial_items(iid,score)
-    res = [int(i) for i in res]
-    if len(res) > 12:
-        res = res[:12]
-    print(res)
-    rec_movies = data.loc[data['movie_id'].isin(res)]
-    print(rec_movies)
-    rec_movies.loc[:, 'like'] = None
-    results = rec_movies.loc[:, ['movie_id', 'movie_title', 'release_date', 'poster_url', 'like']]
-    return json.loads(results.to_json(orient="records"))
 
+    #TODO: at the moment the user id is hardcoded -> should be provided by the function call 
+    result = content_based.get_recommend_content_based_approach(movies, data, genre_list, user_id=944)
+    return result
 
 @app.get("/api/add_recommend/{item_id}")
 async def add_recommend(item_id):
