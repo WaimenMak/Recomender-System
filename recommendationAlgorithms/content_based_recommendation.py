@@ -17,6 +17,7 @@ from surprise import Dataset
 from sklearn.metrics.pairwise import cosine_similarity
 from entities.Movie import Movie
 
+from database.database_connection import SQLiteConnection
 
 def get_recommend_content_based_approach(movies: List[Movie], data, genre_list, user_id):
 
@@ -64,28 +65,38 @@ def user_add_content_based_approach(movies:List[Movie], user_id):
     """
     #-> get new user id for user -> must be unique for session
     #Test: just one id which is out of scope
-    user_id=944
+    # user_id=944
 
-    # simulate adding a new user into the original data file
-    #here the original data file ./u.data is copied to new_u.data 
-    df = pd.read_csv('./u.data', sep="\t")
-    df.to_csv('new_' + 'u.data',sep="\t",  index=False)
+    # # simulate adding a new user into the original data file
+    # #here the original data file ./u.data is copied to new_u.data 
+    # df = pd.read_csv('./u.data', sep="\t")
+    # df.to_csv('new_' + 'u.data',sep="\t",  index=False)
     
-    with open(r'new_u.data',mode='a',newline='',encoding='utf8') as cfa:
-        #A new line with the user's prefered rating is added to the database 
-        wf = csv.writer(cfa,delimiter='\t')
-        data_input = []
+    # with open(r'new_u.data',mode='a',newline='',encoding='utf8') as cfa:
+    #     #A new line with the user's prefered rating is added to the database 
+    #     wf = csv.writer(cfa,delimiter='\t')
+    #     data_input = []
 
-        #Here all items of the initial recommendation are added to the database
-        for item in movies: 
-            iid = item.movie_id
-            score = item.score 
-            s = [user_id,str(iid),int(score),'0']
-            data_input.append(s)
-            for k in data_input:
-                wf.writerow(k)
+    #     #Here all items of the initial recommendation are added to the database
+    #     for item in movies: 
+    #         iid = item.movie_id
+    #         score = item.score 
+    #         s = [user_id,str(iid),int(score),'0']
+    #         data_input.append(s)
+    #         for k in data_input:
+    #             wf.writerow(k)
 
+    #Open Connection
+    sqlConnection = SQLiteConnection()
 
+    for item in movies: 
+        iid = item.movie_id
+        score = item.score 
+        s = [user_id,str(iid),int(score),'0']
+        
+        query = f"Insert INTO runtime_u_data VALUES ({user_id}, {str(iid)}, {int(score)}, '0')"
+
+        sqlConnection.insert_statement(query)
 
 #________________________________Content-based movie recommendation system_________________________________________--
 def get_initial_items_content_based_approach(movies:List[Movie], data, genre_list, user_id):
@@ -111,9 +122,16 @@ def get_initial_items_content_based_approach(movies:List[Movie], data, genre_lis
     res = []
     user_add_content_based_approach(movies, user_id)
 
-    fields=["user_id", "movie_id", "rating", "timestamp"]
-    user_preference_df = pd.read_csv("new_u.data", sep="\t", names=fields, encoding="utf-8")
+    sqlConnection = SQLiteConnection()
+    con = sqlConnection.connection
+
+    user_preference_df = pd.read_sql_query(f"SELECT * from runtime_u_data WHERE user_id={user_id}", con)    
+
+
+
     movies_genre_df = data 
+
+
 
     user_preference_df["user_id"] =  user_preference_df["user_id"].astype(int)
 
@@ -138,6 +156,11 @@ def get_initial_items_content_based_approach(movies:List[Movie], data, genre_lis
 
     user_profile_normalized = user_profile / sum(user_profile.values)
 
+
+    #Save to database
+    user_profile_normalized_sql = user_profile_normalized.copy(deep=True)
+    user_profile_normalized_sql["user_id"]= "user_id"
+    user_profile_normalized_sql.to_sql(name='user_profile', con=con, if_exists='append')
 
     #Calculate recommendation based on the user profile 
     u_v = user_profile_normalized.to_numpy()
