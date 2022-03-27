@@ -1,0 +1,1 @@
+web: gunicorn main:comp7240-group-project-app
