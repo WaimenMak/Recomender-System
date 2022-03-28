@@ -2,6 +2,10 @@ from typing import Optional, List
 from pydantic import BaseModel
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 import pandas as pd
 import numpy as np
 import os
@@ -16,9 +20,12 @@ from surprise import KNNBasic
 from surprise import Dataset
 from entities.Movie import Movie
 
+
 import  recommendationAlgorithms.content_based_recommendation as content_based
 
 
+templates = Jinja2Templates(directory="templates")     
+     
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -28,6 +35,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # =======================DATA=========================
 data = pd.read_csv("movie_info.csv")
 genre_list =["Action", "Adventure", "Animation", "Children", "Comedy", "Crime","Documentary", "Drama", "Fantasy", "Film_Noir", "Horror", "Musical", "Mystery","Romance", "Sci_Fi", "Thriller", "War", "Western"]
@@ -36,10 +44,12 @@ genre_list =["Action", "Adventure", "Animation", "Children", "Comedy", "Crime","
 =================== Body =============================
 """
 
-
+#=======================Website===============================
+@app.get("/test", response_class=HTMLResponse)
+async def read_item(request: Request):
+    return templates.TemplateResponse("index.html",{"request": request}) 
 
 # == == == == == == == == == API == == == == == == == == == == =
-
 # show four genres
 @app.get("/api/genre")
 def get_genre():
