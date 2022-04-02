@@ -67,8 +67,10 @@ def get_genre():
 @app.post("/api/movies")
 def get_movies(genre: list):
     print(genre)
+    print("hello")
     query_str = " or ".join(map(map_genre, genre))
     results = data.query(query_str)
+    print(results)
     results.loc[:, 'score'] = None
     results = results.sample(18).loc[:, ['movie_id', 'movie_title', 'release_date', 'poster_url', 'score']]
     return json.loads(results.to_json(orient="records"))
@@ -96,6 +98,7 @@ def get_recommend(movies: List[Movie]):
 
     #TODO: at the moment the user id is hardcoded -> should be provided by the function call 
     result = content_based.get_recommend_content_based_approach(movies, data, genre_list, user_id=944)
+
     return result
 
 @app.get("/api/add_recommend/{item_id}")

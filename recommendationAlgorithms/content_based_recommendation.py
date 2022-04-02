@@ -9,7 +9,7 @@ import csv
 from sklearn.cluster import estimate_bandwidth
 from surprise import Reader
 from surprise.model_selection import train_test_split
-from utils import map_genre
+# from utils import map_genre
 import json
 from surprise import dump
 from surprise import KNNBasic
