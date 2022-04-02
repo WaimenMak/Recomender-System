@@ -9,7 +9,7 @@ import csv
 from sklearn.cluster import estimate_bandwidth
 from surprise import Reader
 from surprise.model_selection import train_test_split
-from utils import map_genre
+from utils import map_genre, item_representation_based_book_plots
 import json
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
@@ -66,16 +66,29 @@ def get_genre():
                       "Romance", "Sci_Fi", "Thriller", "War", "Western"]}
 '''
 
+# @app.post("/api/books")
+# def get_books(genre: list):
+#     print(genre)
+#     print("hello")
+#     query_str = " or ".join(map(map_genre, genre))
+#     results = data.query(query_str)
+#     print(results)
+#     results.loc[:, 'score'] = None
+#     results = results.drop_duplicates()
+#     results = results.sample(18).loc[:, ['itemId', 'Book-title', 'Year-Of-Publication', 'Image-URL-M', 'score']]
+#     return json.loads(results.to_json(orient="records"))
+
 @app.post("/api/books")
-def get_books(genre: list):
-    print(genre)
-    print("hello")
-    query_str = " or ".join(map(map_genre, genre))
-    results = data.query(query_str)
+def get_books(keywords: list):
+    print(keywords)
+    _, book_TF_IDF_vector, _ = item_representation_based_book_plots(data)
+    s = set()
+    for kw in keywords:
+        for item in book_TF_IDF_vector[book_TF_IDF_vector[kw]>0].itemId:
+            s.add(item)
+    res = np.random.choice(list(s), 18)
+    results = data[data['itemId'].isin(res)]
     print(results)
-    results.loc[:, 'score'] = None
-    results = results.drop_duplicates()
-    results = results.sample(18).loc[:, ['itemId', 'Book-title', 'Year-Of-Publication', 'Image-URL-M', 'score']]
     return json.loads(results.to_json(orient="records"))
 
 # Yan's function

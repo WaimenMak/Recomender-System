@@ -10,6 +10,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer
 from processing import preprocessing
 import csv
+from content_based_recommendation import user_add_content_based_approach
 
 def user_add(iid, score):
     user = '944'
@@ -24,27 +25,11 @@ def user_add(iid, score):
         for k in data_input:
             wf.writerow(k)
 
+def item2vec(books: List[book]):
+    iid = str(sorted(books, key=lambda i: i.score, reverse=True)[0].movie_id)
+    # score = int(sorted(books, key=lambda i: i.score, reverse=True)[0].score)
 
-# def item_representation_based_book_plots(book_df, max_feat=100):
-#     tfidf = TfidfVectorizer(preprocessor=preprocessing,
-#                             ngram_range=(1, 1),
-#                             max_features=max_feat)
-#     tfidf_matrix = tfidf.fit_transform(book_df['Book-Title'])
-#
-#     feature_list = tfidf.get_feature_names()
-#     movie_TF_IDF_vector = pd.DataFrame(tfidf_matrix.toarray(), columns=tfidf.get_feature_names())
-#     movie_TF_IDF_vector['itemId'] = book_df['itemId']
-#
-#     return tfidf_matrix, movie_TF_IDF_vector, feature_list
 
-def item_representation_based_book_plots(book_df, max_feat=100):
-    tfidf = TfidfVectorizer(preprocessor=preprocessing,
-                            ngram_range=(1, 1),
-                            max_features=max_feat)
-    tfidf_matrix = tfidf.fit_transform(book_df['Book-Title'])
 
-    feature_list = tfidf.get_feature_names()
-    movie_TF_IDF_vector = pd.DataFrame(tfidf_matrix.toarray(), columns=tfidf.get_feature_names())
-    movie_TF_IDF_vector['itemId'] = book_df['itemId']
 
-    return tfidf_matrix, movie_TF_IDF_vector, feature_list
+
