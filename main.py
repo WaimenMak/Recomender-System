@@ -2,10 +2,6 @@ from typing import Optional, List
 from pydantic import BaseModel
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 import pandas as pd
 import numpy as np
 import os
@@ -18,14 +14,7 @@ import json
 from surprise import dump
 from surprise import KNNBasic
 from surprise import Dataset
-from entities.Movie import Movie
 
-
-import  recommendationAlgorithms.content_based_recommendation as content_based
-
-
-templates = Jinja2Templates(directory="templates")     
-     
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -35,25 +24,28 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 # =======================DATA=========================
-data = pd.read_csv("movie_info.csv")
-genre_list =["Action", "Adventure", "Animation", "Children", "Comedy", "Crime","Documentary", "Drama", "Fantasy", "Film_Noir", "Horror", "Musical", "Mystery","Romance", "Sci_Fi", "Thriller", "War", "Western"]
+data = pd.read_csv("book_info.csv")
 
 """
 =================== Body =============================
 """
 
-#=======================Website===============================
-@app.get("/test", response_class=HTMLResponse)
-async def read_item(request: Request):
-    return templates.TemplateResponse("index.html",{"request": request}) 
+# test Yan
+
+class Book(BaseModel):
+    item_id: int
+    book_title: str
+    publication_date: str
+    score: int
+
 
 # == == == == == == == == == API == == == == == == == == == == =
+
 # show four genres
 @app.get("/api/genre")
 def get_genre():
-    return {'genre': ["Action", "Adventure", "Animation", "Children"]}
+    return {'genre': ["fiction", "love", "story", "lady"]}
 
 # show all generes
 '''
@@ -64,49 +56,42 @@ def get_genre():
                       "Romance", "Sci_Fi", "Thriller", "War", "Western"]}
 '''
 
-@app.post("/api/movies")
-def get_movies(genre: list):
+@app.post("/api/books")
+def get_books(genre: list):
     print(genre)
     query_str = " or ".join(map(map_genre, genre))
     results = data.query(query_str)
     results.loc[:, 'score'] = None
-    results = results.sample(18).loc[:, ['movie_id', 'movie_title', 'release_date', 'poster_url', 'score']]
+    results = results.drop_duplicates()
+    results = results.sample(18).loc[:, ['itemId', 'Book-title', 'Year-Of-Publication', 'Image-URL-M', 'score']]
     return json.loads(results.to_json(orient="records"))
 
-
-# @app.post("/api/recommend")
-# def get_recommend(movies: List[Movie]):
-#     # print(movies)
-#     iid = str(sorted(movies, key=lambda i: i.score, reverse=True)[0].movie_id)
-#     score = int(sorted(movies, key=lambda i: i.score, reverse=True)[0].score)
-#     res = get_initial_items(iid,score)
-#     res = [int(i) for i in res]
-#     if len(res) > 12:
-#         res = res[:12]
-#     print(res)
-#     rec_movies = data.loc[data['movie_id'].isin(res)]
-#     print(rec_movies)
-#     rec_movies.loc[:, 'like'] = None
-#     results = rec_movies.loc[:, ['movie_id', 'movie_title', 'release_date', 'poster_url', 'like']]
-#     return json.loads(results.to_json(orient="records"))
-
-
 @app.post("/api/recommend")
-def get_recommend(movies: List[Movie]):
+def get_recommend(books: List[Book]):
+    # print(books)
+    iid = str(sorted(books, key=lambda i: i.score, reverse=True)[0].movie_id)
+    score = int(sorted(books, key=lambda i: i.score, reverse=True)[0].score)
+    res = get_initial_items(iid,score)
+    res = [int(i) for i in res]
+    if len(res) > 12:
+        res = res[:12]
+    print(res)
+    rec_books = data.loc[data['movie_id'].isin(res)]
+    print(rec_books)
+    rec_books.loc[:, 'like'] = None
+    results = rec_books.loc[:, ['movie_id', 'movie_title', 'release_date', 'poster_url', 'like']]
+    return json.loads(results.to_json(orient="records"))
 
-    #TODO: at the moment the user id is hardcoded -> should be provided by the function call 
-    result = content_based.get_recommend_content_based_approach(movies, data, genre_list, user_id=944)
-    return result
 
 @app.get("/api/add_recommend/{item_id}")
 async def add_recommend(item_id):
     res = get_similar_items(str(item_id), n=5)
     res = [int(i) for i in res]
     print(res)
-    rec_movies = data.loc[data['movie_id'].isin(res)]
-    print(rec_movies)
-    rec_movies.loc[:, 'like'] = None
-    results = rec_movies.loc[:, ['movie_id', 'movie_title', 'release_date', 'poster_url', 'like']]
+    rec_books = data.loc[data['movie_id'].isin(res)]
+    print(rec_books)
+    rec_books.loc[:, 'like'] = None
+    results = rec_books.loc[:, ['movie_id', 'movie_title', 'release_date', 'poster_url', 'like']]
     return json.loads(results.to_json(orient="records"))
 
 
