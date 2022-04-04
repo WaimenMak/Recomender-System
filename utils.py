@@ -1,5 +1,5 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
-from processing import preprocessing
+from recommendationAlgorithms.processing import preprocessing
 import pandas as pd
 
 def map_genre(genre):

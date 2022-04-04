@@ -42,18 +42,17 @@ def get_recommend_content_based_approach(movies: List[Movie], data, genre_list, 
 
     #Just the whole data is loaded from the ids 
 
-    #None of these movies have been liked by the user 
-    rec_movies.loc[:, 'like'] = None
-    results = rec_movies.loc[:, ['movie_id', 'movie_title', 'release_date', 'poster_url', 'like']]
+    #None of these movies have been scored by the user 
+    rec_movies.loc[:, 'score'] = None
+    results = rec_movies.loc[:, ['movie_id', 'movie_title', 'release_date', 'poster_url', 'score']]
     return json.loads(results.to_json(orient="records"))
 
 
 def user_add_content_based_approach(movies:List[Movie], user_id):
     """
     Summary: 
-        - This method stores the user's selected movies in a .csv file 
-        - The file with user recommendations is copied and during runtime a separate file is used. 
-        - The user's preferences are added to this separate file 
+        - This method stores the user's selected movies in a database 
+        - The user's preferences are added to the database
 
     Args: 
         movies: List[Movies] -> List of Movies which the user selected  
@@ -139,9 +138,6 @@ def get_initial_items_content_based_approach(movies:List[Movie], data, genre_lis
 
     user_preference_df_filtered = user_preference_df[user_preference_df["user_id"]==user_id]
     user_movie_rating_df_filtered = pd.merge(user_preference_df_filtered, movies_genre_df)
-
-    # user_movie_rating_df_filtered = user_movie_rating_df[user_movie_rating_df["user_id"]==9940]
-
 
 
     user_movie_df = user_movie_rating_df_filtered.copy(deep=True)
