@@ -47,7 +47,8 @@ runtime_u_data = """  CREATE TABLE IF NOT EXISTS runtime_u_data (
                                         user_id integer,
                                         movie_id integer NOT NULL, 
                                         rating integer, 
-                                        timestamp integer,
+                                        round integer, 
+                                        algorithm integer, 
                                         FOREIGN KEY(movie_id) REFERENCES projects (id))
 
 """

@@ -27,4 +27,7 @@ docker build . -t recommendation_project/server
 
 
 2. Start conatiner
-docker run -p 8000:8000 -d recommendation_project/client
+docker run -p 8000:8000 -d recommendation_project/server
+
+3. Enter container for debug reasons: 
+docker exec -it <container id> /bin/bash
