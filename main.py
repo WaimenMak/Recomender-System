@@ -20,31 +20,25 @@ from surprise import KNNBasic
 from surprise import Dataset
 from entities.Movie import Movie
 
-from flask import Flask, render_template, g, jsonify, request, redirect, url_for, session, flash
-import os
 
 import  recommendationAlgorithms.content_based_recommendation as content_based
 
-#Flask 
-app = Flask(__name__,
-            static_folder = "./dist/static",
-            template_folder = "./dist")
 
 ## Fast API 
-# templates = Jinja2Templates(directory="templates")     
+templates = Jinja2Templates(directory="templates")     
      
-# app = FastAPI()
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=["*"],
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
+app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # =======================DATA=========================
-data = pd.read_csv("movie_info.csv")
+data = pd.read_csv("/oldData/movie_info.csv")
 genre_list =["Action", "Adventure", "Animation", "Children", "Comedy", "Crime","Documentary", "Drama", "Fantasy", "Film_Noir", "Horror", "Musical", "Mystery","Romance", "Sci_Fi", "Thriller", "War", "Western"]
 
 """
@@ -52,9 +46,9 @@ genre_list =["Action", "Adventure", "Animation", "Children", "Comedy", "Crime","
 """
 
 #=======================Website===============================
-# @app.get("/test", response_class=HTMLResponse)
-# async def read_item(request: Request):
-#     return templates.TemplateResponse("/client/index.html",{"request": request}) 
+@app.get("/test", response_class=HTMLResponse)
+async def read_item(request: Request):
+    return templates.TemplateResponse("/client/index.html",{"request": request}) 
 
 # == == == == == == == == == API == == == == == == == == == == =
 
@@ -208,7 +202,3 @@ async def add_recommend(item_id):
 #     neighbors_iid = [algo.trainset.to_raw_iid(x) for x in neighbors]
 #     print(neighbors_iid)
 #     return neighbors_iid
-
-# port = os.getenv('PORT', '5006')
-if __name__ == "__main__":
-	app.run(host='0.0.0.0', port=8000,debug=True)
