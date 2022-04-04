@@ -6,6 +6,8 @@
 1. heroku git:remote -a comp7240-group-project-app
 https://comp7240-group-project-app.herokuapp.com/ 
 
+2. How to change the stack in Heroku to deploy containers (only necessary once)
+heroku stack:set container -a comp7240-group-project-app  
 
 # Docker Client
 1. Build client Dockerfile: 
@@ -31,3 +33,8 @@ docker run -p 8000:8000 -d recommendation_project/server2
 
 3. Enter container for debug reasons: 
 docker exec -it <container id> /bin/bash
+
+
+
+# Docker ACI Context 
+- myacicontext

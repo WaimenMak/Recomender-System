@@ -2,6 +2,7 @@ version: '3'
 services:
   frontend:
     image: recommendation_project/client
+    domainname: comp7240-group-project-app
     ports: 
       - "3000:3000"
     links:
