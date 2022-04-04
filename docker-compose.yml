@@ -1,0 +1,12 @@
+version: '3'
+services:
+  frontend:
+    image: recommendation_project/client
+    ports: 
+      - "3000:3000"
+    links:
+      - "backend: backend" 
+  backend:
+    image: recommendation_project/server2
+    ports:
+      - "8000:8000"

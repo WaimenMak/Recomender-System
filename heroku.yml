@@ -1,0 +1,7 @@
+build:
+  docker:
+    frontend: client/Dockerfile
+    backend: Dockerfile
+release:
+  image: frontend
+  image: backend

@@ -23,11 +23,11 @@ docker exec -it <container id> /bin/bash
 
 # Docker Backend
 1. Build server Dockerfile: 
-docker build . -t recommendation_project/server
+docker build . -t recommendation_project/server2
 
 
 2. Start conatiner
-docker run -p 8000:8000 -d recommendation_project/server
+docker run -p 8000:8000 -d recommendation_project/server2
 
 3. Enter container for debug reasons: 
 docker exec -it <container id> /bin/bash
