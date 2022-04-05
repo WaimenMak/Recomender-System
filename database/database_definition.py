@@ -73,12 +73,13 @@ user_profile = """  CREATE TABLE IF NOT EXISTS user_profile (
                                         Documentary real, 
                                         Drama real, 
                                         Fantasy real, 
-                                        Film_Noir real, 
+                                        Film-Noir real, 
                                         Horror real, 
                                         Musical real, 
                                         Mystery text, 
                                         Romance real, 
-                                        Sci_Fi real, 
+                                        Sci-Fi real, 
+                                        IMAX real, 
                                         Thriller real, 
                                         War real, 
                                         Western real )
@@ -131,12 +132,12 @@ def main():
         print("Error! cannot create the database connection.")
 
     # Copy the data to the database
-    movie_info_df = pd.read_csv("movie_info.csv")
-    movie_poster_df = pd.read_csv("movie_poster.csv")
-    user_data_df = pd.read_csv('./u.data')
+    movie_info_df = pd.read_csv("./data/movie_info_new.csv")
+    # movie_poster_df = pd.read_csv("movie_poster.csv")
+    user_data_df = pd.read_csv('./oldData//u.data')
 
     movie_info_df.to_sql(name='movie_info', con=conn, if_exists='replace')
-    movie_poster_df.to_sql(name='movie_poster', con=conn,if_exists='replace')
+    # movie_poster_df.to_sql(name='movie_poster', con=conn,if_exists='replace')
     user_data_df.to_sql(name='user_data', con=conn, if_exists='replace')
 
 if __name__ == '__main__':

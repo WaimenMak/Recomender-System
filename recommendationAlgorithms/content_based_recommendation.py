@@ -46,12 +46,12 @@ def get_recommend_content_based_approach(movies: List[Movie], data, genre_list, 
 
     #None of these movies have been scored by the user 
     rec_movies.loc[:, 'score'] = None
-    results = rec_movies.loc[:, ['movie_id', 'movie_title', 'release_date', 'poster_url', 'score']]
+    results = rec_movies.loc[:, ['movie_id', 'movie_title', 'poster_url', 'score']]
 
     return json.loads(results.to_json(orient="records")) ,  json.loads(user_profile.to_json(orient="records"))
 
 
-def user_add_content_based_approach(movies:List[Movie], user_id, round):
+def user_add_content_based_approach(movies:List[Movie], user_id, round, algorithm):
     """
     Summary: 
         - This method stores the user's selected movies in a database 
@@ -73,7 +73,7 @@ def user_add_content_based_approach(movies:List[Movie], user_id, round):
         score = item.score 
         s = [user_id,str(iid),int(score),'0']
         
-        query = f"Insert INTO runtime_u_data VALUES ({user_id}, {str(iid)}, {int(score)}, {int(round)}, 1)"
+        query = f"Insert INTO runtime_u_data VALUES ({user_id}, {str(iid)}, {int(score)}, {int(round)},{int(algorithm)} )"
 
         sqlConnection.insert_statement(query)
 
@@ -99,7 +99,7 @@ def get_initial_items_content_based_approach(movies:List[Movie], data, genre_lis
 
     """
     res = []
-    user_add_content_based_approach(movies, user_id, round)
+    user_add_content_based_approach(movies, user_id, round, 1)
 
     sqlConnection = SQLiteConnection()
     con = sqlConnection.connection
@@ -147,7 +147,7 @@ def get_initial_items_content_based_approach(movies:List[Movie], data, genre_lis
     recommendation_table =  cosine_similarity(u_v.T,movies_genre_matrix)
 
 
-    recommendation_table_df = movies_genre_df[['movie_id', 'movie_title', 'release_date', 'poster_url']].copy(deep=True)
+    recommendation_table_df = movies_genre_df[['movie_id', 'movie_title', 'poster_url']].copy(deep=True)
     recommendation_table_df['similarity'] = recommendation_table[0]
 
     #Return the top 12 items back 
@@ -262,7 +262,7 @@ def get_similar_items_content_based_approach(itemid, data, genre_list, user_id):
     recommendation_table =  cosine_similarity(user_item_vector, movies_genre_matrix)
 
 
-    recommendation_table_df = movies_genre_df[['movie_id', 'movie_title', 'release_date', 'poster_url']].copy(deep=True)
+    recommendation_table_df = movies_genre_df[['movie_id', 'movie_title', 'poster_url']].copy(deep=True)
     recommendation_table_df['similarity'] = recommendation_table[0]
 
     #Filter all items that have the same genres as the provided item 
@@ -271,6 +271,6 @@ def get_similar_items_content_based_approach(itemid, data, genre_list, user_id):
     res = recommendation_table_df.sort_values(by=['similarity'], ascending=False)[0:5]
 
     res.loc[:, 'score'] = None
-    results = res.loc[:, ['movie_id', 'movie_title', 'release_date', 'poster_url', 'score']]
+    results = res.loc[:, ['movie_id', 'movie_title', 'poster_url', 'score']]
     return json.loads(results.to_json(orient="records"))
     
