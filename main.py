@@ -42,7 +42,8 @@ app.add_middleware(
 
 
 # =======================DATA=========================
-data = pd.read_csv("/oldData/movie_info.csv")
+# data = pd.read_csv("oldData/movie_info.csv")
+data = pd.read_csv("data/movie_info_new.csv")
 init_set = set()   # for keywords initial recommendation
 model = Word2Vec.load('movies_embedding.model')
 
@@ -63,9 +64,14 @@ async def read_item(request: Request):
 
 #== == == == == == == == == 1. Get Keywords/ Genres for initial selection  
 # show four genres
+# @app.get("/api/genre")
+# def get_genre():
+#     return {'genre': ["Action", "Adventure", "Animation", "Children"]}
+
+
 @app.get("/api/genre")
 def get_genre():
-    return {'genre': ["Action", "Adventure", "Animation", "Children"]}
+    return {'genre': ["child", "escape", "family", "friend"]}
 
 # show all generes
 '''
@@ -77,7 +83,7 @@ def get_genre():
 '''
 
 #== == == == == == == == == 2. Get Keywords/ Genres for initial selection  
-@app.post("/api/movies")
+# @app.post("/api/movies")
 # def get_movies(genre: list):
 #     print(genre)
 #     query_str = " or ".join(map(map_genre, genre))
@@ -89,10 +95,11 @@ def get_genre():
 @app.post("/api/movies")
 def get_movies(keywords: list):
     print(keywords)
-    _, movie_TF_IDF_vector, _ = item_representation_based_movie_plots(data)
+    # _, movie_TF_IDF_vector, _ = item_representation_based_movie_plots(data)
+    movie_TF_IDF_vector = pd.read_json("tfidf_mat.json")
     # s = set()
     for kw in keywords:
-        for item in movie_TF_IDF_vector[movie_TF_IDF_vector[kw]>0].movie_id:
+        for item in movie_TF_IDF_vector[movie_TF_IDF_vector[kw]>0].movieId:
             init_set.add(item)
     res = np.random.choice(list(init_set), 18)
     results = data[data['movieId'].isin(res)]
@@ -126,7 +133,7 @@ def get_recommend(movies: List[Movie]):
     """     
 
     #TODO: at the moment the user id is hardcoded -> should be provided by the function call
-    algorithm =1 
+    algorithm =2
     if algorithm==1: 
         #Here the content based algorithm is called 
         recommendations, user_profile = content_based.get_recommend_content_based_approach(movies, data, genre_list, 944, 1)
