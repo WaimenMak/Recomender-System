@@ -19,6 +19,7 @@ from surprise import dump
 from surprise import KNNBasic
 from surprise import Dataset
 from entities.Movie import Movie
+from utils import item_representation_based_movie_plots
 
 
 import  recommendationAlgorithms.content_based_recommendation as content_based
@@ -77,15 +78,26 @@ def get_genre():
 
 #== == == == == == == == == 2. Get Keywords/ Genres for initial selection  
 @app.post("/api/movies")
-def get_movies(genre: list):
-    print(genre)
-    query_str = " or ".join(map(map_genre, genre))
-    results = data.query(query_str)
-    results.loc[:, 'score'] = None
-    results = results.sample(18).loc[:, ['movie_id', 'movie_title', 'release_date', 'poster_url', 'score']]
+# def get_movies(genre: list):
+#     print(genre)
+#     query_str = " or ".join(map(map_genre, genre))
+#     results = data.query(query_str)
+#     results.loc[:, 'score'] = None
+#     results = results.sample(18).loc[:, ['movie_id', 'movie_title', 'release_date', 'poster_url', 'score']]
+#     return json.loads(results.to_json(orient="records"))
+
+@app.post("/api/movies")
+def get_movies(keywords: list):
+    print(keywords)
+    _, movie_TF_IDF_vector, _ = item_representation_based_movie_plots(data)
+    # s = set()
+    for kw in keywords:
+        for item in movie_TF_IDF_vector[movie_TF_IDF_vector[kw]>0].movie_id:
+            init_set.add(item)
+    res = np.random.choice(list(init_set), 18)
+    results = data[data['movieId'].isin(res)]
+    print(results)
     return json.loads(results.to_json(orient="records"))
-
-
 
 #== == == == == == == == == 3. Get Recommendation
 @app.post("/api/recommend")

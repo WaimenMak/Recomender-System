@@ -106,4 +106,13 @@ def get_similar_items(iid, data, model):
     results = rec_movies.loc[:, ['movieId', 'title', 'like', "explaination"]]
     return json.loads(results.to_json(orient="records"))
 
-
+@app.post("/api/refresh")
+def refresh_movies():
+    """
+    refresh the movies after clicking the refresh button
+    :return: 
+    """
+    res = np.random.choice(list(init_set), 18)
+    results = data[data['movieId'].isin(res)]
+    print(results)
+    return json.loads(results.to_json(orient="records"))
