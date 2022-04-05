@@ -38,7 +38,7 @@ app.add_middleware(
 
 
 # =======================DATA=========================
-data = pd.read_csv("/oldData/movie_info.csv")
+data = pd.read_csv("oldData/movie_info.csv")
 genre_list =["Action", "Adventure", "Animation", "Children", "Comedy", "Crime","Documentary", "Drama", "Fantasy", "Film_Noir", "Horror", "Musical", "Mystery","Romance", "Sci_Fi", "Thriller", "War", "Western"]
 
 """
@@ -80,7 +80,6 @@ def get_movies(genre: list):
     return json.loads(results.to_json(orient="records"))
 
 
-
 #== == == == == == == == == 3. Get Recommendation
 @app.post("/api/recommend")
 def get_recommend(movies: List[Movie]):
@@ -118,6 +117,7 @@ def get_recommend(movies: List[Movie]):
     return recommendations
 
 #== == == == == == == == == 4. This returns the 5 most simlar items for a given item_id 
+#TODO: rename to : get_similar_items
 @app.get("/api/add_recommend/{item_id}")
 async def add_recommend(item_id):
     """
@@ -148,6 +148,23 @@ async def add_recommend(item_id):
         #TODO: implement item-to-factor algorithm 
         pass
     return result
+
+
+
+#== == == == == == == == == 5. Update the already rated items 
+@app.post("/api/update_recommend/{item_id}")
+async def update_recommend(item_id, algorithm: int, round: int):
+    pass
+
+
+#== == == == == == == == == 6. Remove the already rated items 
+@app.delete("/api/delete_recommend/{item_id}")
+async def update_recommend(item_id, algorithm: int, round: int ):
+    pass
+    # 1. Remove the entry from the database 
+    # 2. Recalculate the recommendation list and return to the user 
+
+
 
     # res = get_similar_items(str(item_id), n=5)
     # res = [int(i) for i in res]
