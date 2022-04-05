@@ -19,10 +19,14 @@ from surprise import dump
 from surprise import KNNBasic
 from surprise import Dataset
 from entities.Movie import Movie
+from utils import item_representation_based_movie_plots
 
 
 import  recommendationAlgorithms.content_based_recommendation as content_based
+from  recommendationAlgorithms.algo2 import item2vec, get_similar_items
 
+from gensim.models import Word2Vec
+import os
 
 ## Fast API 
 templates = Jinja2Templates(directory="templates")     
@@ -38,7 +42,10 @@ app.add_middleware(
 
 
 # =======================DATA=========================
-data = pd.read_csv("oldData/movie_info.csv")
+data = pd.read_csv("/oldData/movie_info.csv")
+init_set = set()   # for keywords initial recommendation
+model = Word2Vec.load('movies_embedding.model')
+
 genre_list =["Action", "Adventure", "Animation", "Children", "Comedy", "Crime","Documentary", "Drama", "Fantasy", "Film_Noir", "Horror", "Musical", "Mystery","Romance", "Sci_Fi", "Thriller", "War", "Western"]
 
 """
@@ -71,14 +78,26 @@ def get_genre():
 
 #== == == == == == == == == 2. Get Keywords/ Genres for initial selection  
 @app.post("/api/movies")
-def get_movies(genre: list):
-    print(genre)
-    query_str = " or ".join(map(map_genre, genre))
-    results = data.query(query_str)
-    results.loc[:, 'score'] = None
-    results = results.sample(18).loc[:, ['movie_id', 'movie_title', 'release_date', 'poster_url', 'score']]
-    return json.loads(results.to_json(orient="records"))
+# def get_movies(genre: list):
+#     print(genre)
+#     query_str = " or ".join(map(map_genre, genre))
+#     results = data.query(query_str)
+#     results.loc[:, 'score'] = None
+#     results = results.sample(18).loc[:, ['movie_id', 'movie_title', 'release_date', 'poster_url', 'score']]
+#     return json.loads(results.to_json(orient="records"))
 
+@app.post("/api/movies")
+def get_movies(keywords: list):
+    print(keywords)
+    _, movie_TF_IDF_vector, _ = item_representation_based_movie_plots(data)
+    # s = set()
+    for kw in keywords:
+        for item in movie_TF_IDF_vector[movie_TF_IDF_vector[kw]>0].movie_id:
+            init_set.add(item)
+    res = np.random.choice(list(init_set), 18)
+    results = data[data['movieId'].isin(res)]
+    print(results)
+    return json.loads(results.to_json(orient="records"))
 
 #== == == == == == == == == 3. Get Recommendation
 @app.post("/api/recommend")
@@ -112,8 +131,9 @@ def get_recommend(movies: List[Movie]):
         #Here the content based algorithm is called 
         recommendations, user_profile = content_based.get_recommend_content_based_approach(movies, data, genre_list, 944, 1)
     else: 
-        #TODO: implement item-to-factor algorithm 
-        pass
+        #TODO: implement item-to-factor algorithm
+        recommendations = item2vec(movies, data, model, 944, init_set, 18, 1)
+
     return recommendations
 
 #== == == == == == == == == 4. This returns the 5 most simlar items for a given item_id 
@@ -145,8 +165,9 @@ async def add_recommend(item_id):
         #Here the content based algorithm is called 
         result = content_based.get_similar_items_content_based_approach(item_id, data, genre_list, user_id=944)
     else: 
-        #TODO: implement item-to-factor algorithm 
-        pass
+        #TODO: implement item-to-factor algorithm
+        result = get_similar_items(item_id, data, model)
+
     return result
 
 
