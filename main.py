@@ -22,7 +22,10 @@ from entities.Movie import Movie
 
 
 import  recommendationAlgorithms.content_based_recommendation as content_based
+from  recommendationAlgorithms.algo2 import item2vec, get_similar_items
 
+from gensim.models import Word2Vec
+import os
 
 ## Fast API 
 templates = Jinja2Templates(directory="templates")     
@@ -39,6 +42,9 @@ app.add_middleware(
 
 # =======================DATA=========================
 data = pd.read_csv("/oldData/movie_info.csv")
+init_set = set()   # for keywords initial recommendation
+model = Word2Vec.load('movies_embedding.model')
+
 genre_list =["Action", "Adventure", "Animation", "Children", "Comedy", "Crime","Documentary", "Drama", "Fantasy", "Film_Noir", "Horror", "Musical", "Mystery","Romance", "Sci_Fi", "Thriller", "War", "Western"]
 
 """
@@ -113,8 +119,9 @@ def get_recommend(movies: List[Movie]):
         #Here the content based algorithm is called 
         recommendations, user_profile = content_based.get_recommend_content_based_approach(movies, data, genre_list, 944, 1)
     else: 
-        #TODO: implement item-to-factor algorithm 
-        pass
+        #TODO: implement item-to-factor algorithm
+        recommendations = item2vec(movies, data, model, 944, init_set, 18, 1)
+
     return recommendations
 
 #== == == == == == == == == 4. This returns the 5 most simlar items for a given item_id 
@@ -145,8 +152,9 @@ async def add_recommend(item_id):
         #Here the content based algorithm is called 
         result = content_based.get_similar_items_content_based_approach(item_id, data, genre_list, user_id=944)
     else: 
-        #TODO: implement item-to-factor algorithm 
-        pass
+        #TODO: implement item-to-factor algorithm
+        result = get_similar_items(item_id, data, model)
+
     return result
 
     # res = get_similar_items(str(item_id), n=5)
