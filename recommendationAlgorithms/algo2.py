@@ -39,13 +39,13 @@ def store_result(store_list, mid, title, exp):
   return store_list
 
 def item2vec(movies, data, model, user_id, init_set, n, round):
-    # iid = str(sorted(movies, key=lambda i: i.score, reverse=True)[0].movie_id)
-    # score = int(sorted(movies, key=lambda i: i.score, reverse=True)[0].score)
+    iid = str(sorted(movies, key=lambda i: i.score, reverse=True)[0].movie_id)
+    score = int(sorted(movies, key=lambda i: i.score, reverse=True)[0].score)
     if round > 1:
         finetune_model(movies, model)
 
-    iid = str(sorted(movies, key=lambda i: i['score'], reverse=True)[0]['movieId'])
-    score = int(sorted(movies, key=lambda i: i['score'], reverse=True)[0]['score'])
+    # iid = str(sorted(movies, key=lambda i: i['score'], reverse=True)[0]['movieId'])
+    # score = int(sorted(movies, key=lambda i: i['score'], reverse=True)[0]['score'])
 
     # user_add(iid, score)
     user_add_content_based_approach(movies, user_id, round)
@@ -53,12 +53,12 @@ def item2vec(movies, data, model, user_id, init_set, n, round):
     ls = []
     for movie in movies:
       # if movie.score >= 4:
-        if movie['score'] >= 4:
+        if movie.score >= 4:
         # sim = model.most_similar([str(movie.movieId)], topn=10)
-            sim = model.most_similar([str(movie['movieId'])], topn=10)
+            sim = model.most_similar([str(movie.movie_id)], topn=10)
             for item in sim:
-                title = data.loc[data['movieId']==int(item[0]),'title'].values[0]
-                exp = f"Your interested movie: {movie['title']} has {item[1]:.2f} similarity to movie: {title}"
+                title = data.loc[data['movie_id']==int(item[0]),'title'].values[0]
+                exp = f"Your interested movie: {movie.title} has {item[1]:.2f} similarity to movie: {title}"
                 # s.add(item[0])
                 store_result(ls, item[0], title, exp)
                   # recommendation = temp.loc[temp['movieId']==item[0]]
@@ -75,11 +75,11 @@ def item2vec(movies, data, model, user_id, init_set, n, round):
     elif m == 0:
         res = np.random.choice(list(init_set), n)
         res = [int(i) for i in res]
-        rec_movies = data.loc[data['movieId'].isin(res)]
+        rec_movies = data.loc[data['movie_id'].isin(res)]
         print(rec_movies)
         rec_movies.loc[:, 'like'] = None
         rec_movies.loc[:, 'explaination'] = "Choosen from your keywords"
-        results = rec_movies.loc[:, ['movieId', 'title', 'like', "explaination"]]
+        results = rec_movies.loc[:, ['movie_id', 'title', 'like', "explaination"]]
         return json.loads(results.to_json(orient="records"))
 
 
@@ -89,9 +89,9 @@ def finetune_model(movies, model):
 
     for movie in movies:
         if movie.score >= 4:
-            interested.append(str(movie.movieId))
+            interested.append(str(movie.movie_id))
         else:
-            not_interested.append(str(movie.movieId))
+            not_interested.append(str(movie.movie_id))
     if len(interested) > 0 or len(not_interested) > 0:
         new_sentense = [interested, not_interested]
         model.train(new_sentense, total_examples=model.corpus_count, epochs=model.epochs)
