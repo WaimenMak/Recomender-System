@@ -23,7 +23,7 @@ from utils import item_representation_based_movie_plots
 
 
 import  recommendationAlgorithms.content_based_recommendation as content_based
-from  recommendationAlgorithms.item_to_vectore_reommendation import item2vec, get_similar_items
+from  recommendationAlgorithms.item_to_vectore_reommendation import item2vec, item2vec_get_items
 
 from gensim.models import Word2Vec
 
@@ -104,10 +104,12 @@ def get_movies(keywords: list):
     movie_TF_IDF_vector = pd.read_json("tfidf_mat.json")
     # s = set()
     for kw in keywords:
-        for item in movie_TF_IDF_vector[movie_TF_IDF_vector[kw]>0].movieId:
+        for item in movie_TF_IDF_vector[movie_TF_IDF_vector[kw]>0.2].movieId:
             init_set.add(item)
     res = np.random.choice(list(init_set), 18)
-    results = data[data['movie_Id'].isin(res)]
+    results = data[data['movie_id'].isin(res)]
+    results.loc[:, 'score'] = None
+    results = results.loc[:, ['movie_id', 'movie_title', 'poster_url', 'score']]
     print(results)
     return json.loads(results.to_json(orient="records"))
 #== == == == == == == == == 3. Get Recommendation
@@ -180,7 +182,7 @@ async def get_similar_items(item_id,algorithm, user_id):
         result = content_based.get_similar_items_content_based_approach(item_id, data, genre_list, user_id=944)
     else: 
         #TODO: implement item-to-factor algorithm
-        result = get_similar_items(item_id, data, model)
+        result = item2vec_get_items(item_id, data, model)
 
     return result
 

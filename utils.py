@@ -15,6 +15,6 @@ def item_representation_based_movie_plots(movies_df, max_feat=100):
 
     feature_list = tfidf.get_feature_names()
     movie_TF_IDF_vector = pd.DataFrame(tfidf_matrix.toarray(), columns=tfidf.get_feature_names())
-    movie_TF_IDF_vector['movieId'] = movies_df['movieId']
+    movie_TF_IDF_vector['movie_id'] = movies_df['movie_id']
 
     return tfidf_matrix, movie_TF_IDF_vector, feature_list

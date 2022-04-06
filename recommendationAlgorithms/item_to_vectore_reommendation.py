@@ -32,8 +32,8 @@ def user_add(iid, score):
 
 def store_result(store_list, mid, title, exp):
   entry = {
-      "movieId": int(mid),
-      "title": title,
+      "movie_id": int(mid),
+      "movie_title": title,
       "liked": None,
       "explaination": exp
   }
@@ -62,9 +62,9 @@ def item2vec(movies, data, model, user_id, init_set, n, round):
             sim = model.wv.most_similar([str(movie.movie_id)], topn=10)
             for item in sim:
                 # print(item[0])
-                if len(data[data["movieId"] == int(item[0])]) > 0:
-                  title = data.loc[data['movieId']==int(item[0]),'title'].values[0]
-                  exp = f"Your interested movie: {movie.title} has {item[1]:.2f} similarity to movie: {title}"
+                if len(data[data["movie_id"] == int(item[0])]) > 0:
+                  title = data.loc[data['movie_id']==int(item[0]),'movie_title'].values[0]
+                  exp = f"Your interested movie: {movie.movie_title} has {item[1]:.2f} similarity to movie: {title}"
                   # s.add(item[0])
                   store_result(ls, item[0], title, exp)
                   # recommendation = temp.loc[temp['movieId']==item[0]]
@@ -84,14 +84,21 @@ def item2vec(movies, data, model, user_id, init_set, n, round):
     elif m == 0:
         res = np.random.choice(list(init_set), n)
         res = [int(i) for i in res]
-        rec_movies = data.loc[data['movieId'].isin(res)]
+        rec_movies = data.loc[data['movie_id'].isin(res)]
         # print(rec_movies)
         rec_movies.loc[:, 'like'] = None
         rec_movies.loc[:, 'explaination'] = "Choosen from your keywords"
-        results = rec_movies.loc[:, ['movieId', 'title', 'like', "explaination"]]
+        results = rec_movies.loc[:, ['movie_id', 'movie_title', 'like', "explaination"]]
         return json.loads(results.to_json(orient="records"))
 
 def finetune_model(movies, model):
+    """
+    The following round of recommendation would produce some new training data according to the users' like and dislike,
+    that can be separated  as two sentences.
+    :param movies: List of movies
+    :param model: The pretrained word2vec model
+    :return: Updated model parameters
+    """
     interested = []
     not_interested = []
 
@@ -104,15 +111,16 @@ def finetune_model(movies, model):
         new_sentense = [interested, not_interested]
         model.train(new_sentense, total_examples=model.corpus_count, epochs=model.epochs)
 
-def get_similar_items(iid, data, model):
+def item2vec_get_items(iid, data, model):
     res = model.wv.most_similar([str(iid)], topn=5)
     res = [int(item[0]) for item in res]
-    rec_movies = data.loc[data['movieId'].isin(res)]
+    rec_movies = data.loc[data['movie_id'].isin(res)]
     print(rec_movies)
     rec_movies.loc[:, 'like'] = None
     rec_movies.loc[:, 'explaination'] = "5 most similar movies"
-    results = rec_movies.loc[:, ['movieId', 'movie_title', 'like', "explaination"]]
+    results = rec_movies.loc[:, ['movie_id', 'movie_title', 'like', "explaination"]]
     return json.loads(results.to_json(orient="records"))
+
 
 # @app.post("/api/refresh")
 # def refresh_movies():
