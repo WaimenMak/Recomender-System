@@ -203,16 +203,26 @@ async def update_recommend(item_id, algorithm: int, round: int ):
 
 
 @app.post("/api/refresh")
-def get_movies(genre: list):
-    print("this is refresh", genre)
-    query_str = " or ".join(map(map_genre, genre))
-    results = data.query(query_str)
-    results.loc[:, 'score'] = 0
-    results = results.sample(
-        18).loc[:, ['movie_id', 'movie_title', 'release_date', 'poster_url', 'score']]
+# def get_movies(genre: list):
+#     print("this is refresh", genre)
+#     query_str = " or ".join(map(map_genre, genre))
+#     results = data.query(query_str)
+#     results.loc[:, 'score'] = 0
+#     results = results.sample(
+#         18).loc[:, ['movie_id', 'movie_title', 'release_date', 'poster_url', 'score']]
+#
+#     print(results)
+#
+#     return json.loads(results.to_json(orient="records"))
 
+def get_movies():
+    """
+    refresh the movies after clicking the refresh button
+    :return:
+    """
+    res = np.random.choice(list(init_set), 18)
+    results = data[data['movie_id'].isin(res)]
     print(results)
-
     return json.loads(results.to_json(orient="records"))
 
 # try to just store the movies which have rated
