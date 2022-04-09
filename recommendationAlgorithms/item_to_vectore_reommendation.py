@@ -30,11 +30,12 @@ def user_add(iid, score):
         for k in data_input:
             wf.writerow(k)
 
-def store_result(store_list, mid, title, exp):
+def store_result(store_list, mid, title, exp, poster):
   entry = {
       "movie_id": int(mid),
       "movie_title": title,
-      "liked": None,
+      "score": None,
+      "poster_url": poster,
       "explaination": exp
   }
   store_list.append(entry)
@@ -65,8 +66,9 @@ def item2vec(movies, data, model, user_id, init_set, n, round):
                 if len(data[data["movie_id"] == int(item[0])]) > 0:
                   title = data.loc[data['movie_id']==int(item[0]),'movie_title'].values[0]
                   exp = f"Your interested movie: {movie.movie_title} has {item[1]:.2f} similarity to movie: {title}"
+                  poster = data.loc[data['movie_id']==int(item[0]),'poster_url']
                   # s.add(item[0])
-                  store_result(ls, item[0], title, exp)
+                  store_result(ls, item[0], title, exp, poster)
                   # recommendation = temp.loc[temp['movieId']==item[0]]
     m = len(ls)
     print(m)
@@ -75,20 +77,20 @@ def item2vec(movies, data, model, user_id, init_set, n, round):
         # res = np.random.choice(list(s), n)
         res = random.sample(ls, n)
         results = pd.DataFrame(res)
-        print("result")
+        print(results)
         return json.loads(results.to_json(orient="records"))
     elif m < n and m > 0:
         results = pd.DataFrame(ls)
-        # print(results)
+        print(results)
         return json.loads(results.to_json(orient="records"))
     elif m == 0:
         res = np.random.choice(list(init_set), n)
         res = [int(i) for i in res]
         rec_movies = data.loc[data['movie_id'].isin(res)]
         # print(rec_movies)
-        rec_movies.loc[:, 'like'] = None
+        rec_movies.loc[:, 'score'] = None
         rec_movies.loc[:, 'explaination'] = "Choosen from your keywords"
-        results = rec_movies.loc[:, ['movie_id', 'movie_title', 'like', "explaination"]]
+        results = rec_movies.loc[:, ['movie_id', 'movie_title', 'poster_url', "explaination"]]
         return json.loads(results.to_json(orient="records"))
 
 def finetune_model(movies, model):
