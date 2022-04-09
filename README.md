@@ -36,5 +36,5 @@ docker exec -it <container id> /bin/bash
 
 
 
-# Docker ACI Context 
-- myacicontext
+# Docker Registry name: 
+comp7240cr 

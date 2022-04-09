@@ -1,0 +1,17 @@
+version: '3'
+services:
+  frontend:
+    build: ./client
+    image: comp7240cr.azurecr.io/recommendation-client
+    container_name: recommendation-client
+    domainname: comp7240-group-project-app
+    ports: 
+      - "3000:3000"
+    links:
+      - "backend: backend" 
+  backend:
+    build: .
+    image: comp7240cr.azurecr.io/recommendation-server
+    container_name: recommendation-server
+    ports:
+      - "8000:8000"

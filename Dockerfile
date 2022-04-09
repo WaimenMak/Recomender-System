@@ -21,8 +21,8 @@
 
 FROM huanjason/scikit-learn:latest
 WORKDIR /app
-RUN adduser -D dockuser
-RUN chown dockuser:dockuser -R /app/
+# RUN adduser -d  dockuser
+# RUN chown dockuser:dockuser -R /app/
 
 # RUN apk add --no-cache --update \
 #     python3 python3-dev gcc \
