@@ -32,12 +32,19 @@
                             <el-card :body-style="{ padding: '0px' }"
                                 style="margin-top:15px;height:430px;overflow:auto;position:relative">
 
+                                <!-- explanationIndex -->
+                                <!-- Place where show the explanation why recommond the movies -->
                                 <el-popover placement="right" title="It is because you have rated this movie...."
                                     width="200" trigger="hover" content="这是一段内容,这是一段内容,这是一段内容,这是一段内容。">
 
-                                    <el-image style="width: 100%;height:240px;" :src="pic_test" fit="cover"></el-image>
+                                    <!-- cannot be changed! it is used to define the hover trigger place-->
                                     <el-image style="width: 100%;height:240px;" :src="o.poster_url" fit="cover"
                                         slot="reference"></el-image>
+                                    <!-- cannot be changed! -->
+
+                                    <!-- You can change and add the explanation below,   -->
+                                    <!-- the explanation data be must include in recommended:[] -->
+                                    <el-image style="width: 100%;height:240px;" :src="pic_test" fit="cover"></el-image>
                                     <h4 style="padding:0 10px;margin:0">{{o.movie_title}}</h4>
                                     <h6 style="padding:0 10px;margin:0.5em">{{ o.release_date }}</h6>
 
@@ -332,6 +339,8 @@
                 //         that.liked.push.apply(that.liked, res.data);
                 //     })
                 // },
+                // ======function example given by TA======
+
 
                 // Quick search location in body: @click="guess_U_like(o) 
                 // input: the movie where the button is
