@@ -106,7 +106,7 @@ def get_movies(firstinput: list):
             init_set.add(item)
     res = np.random.choice(list(init_set), 18)
     results = data[data['movie_id'].isin(res)]
-    results.loc[:, 'score'] = None
+    results.loc[:, 'score'] = 0
     results = results.sample(18).loc[:, ['movie_id', 'movie_title',  'poster_url', 'score']]
     return json.loads(results.to_json(orient="records"))
 
@@ -219,7 +219,7 @@ async def update_recommend(item_id, algorithm: int, round: int ):
 def get_movies():
     res = np.random.choice(list(init_set), 18)
     results = data[data['movie_id'].isin(res)]
-    results.loc[:, 'score'] = None
+    results.loc[:, 'score'] = 0
     results = results.sample(18).loc[:, ['movie_id', 'movie_title',  'poster_url', 'score']]
     return json.loads(results.to_json(orient="records"))
 
