@@ -38,3 +38,4 @@ docker exec -it <container id> /bin/bash
 
 # Docker Registry name: 
 comp7240cr 
+- Deployment: https://docs.microsoft.com/en-us/azure/container-instances/tutorial-docker-compose
