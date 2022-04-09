@@ -94,6 +94,12 @@ def get_movies(firstinput: list):
     keywords = firstinput[0]
 
     global algo_selected 
+    
+    #TODO -> implement user_id increment 
+    # 944 -> 945 -> 946 
+    # Select (max user_id) FROM database 
+
+
 
     algo_selected = firstinput[1]
 
@@ -249,6 +255,8 @@ def get_profile(movies: List[Movie]):
     rec_movies.loc[:, 'rating'] = 0
     results = rec_movies.loc[:, ['movie_id', 'movie_title',
                                    'score', 'rating']]
+    
+    #TODO: Store the data in a database -> here in the end
 
     return json.loads(results.to_json(orient="records"))
 
