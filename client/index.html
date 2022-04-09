@@ -27,7 +27,7 @@
                 <!-- RecommendPage -->
                 <el-tab-pane label="Recommend Movies" name="first">
                     <el-row :gutter="20">
-                      
+
                         <el-col :span="4" v-for="o in recommended" :key="o.movie_id" :offset="0">
                             <el-card :body-style="{ padding: '0px' }"
                                 style="margin-top:15px;height:430px;overflow:auto;position:relative">
@@ -57,7 +57,7 @@
                             </el-card>
 
                         </el-col>
-                        
+
                     </el-row>
 
                     <el-button type="danger" @click="update">
@@ -66,7 +66,7 @@
                 </el-tab-pane>
 
                 <!-- userProfile -->
-                <el-tab-pane label="Rated Movies" name="second">
+                <el-tab-pane label="Rated Movies (User profile)" name="second">
                     <el-row :gutter="20">
                         <el-col :span="4" v-for="o in user_profile" :key="o.movie_id" :offset="0">
                             <el-card :body-style="{ padding: '0px' }"
@@ -78,7 +78,6 @@
                                 <el-button type="danger" @click="o.score=0">
                                     <i class="el-icon-info el-icon--left"></i>remove
                                 </el-button>
-                                <!-- // focus -->
                                 <el-button type="primary" @click="guess_U_like(o)">
                                     <i class="el-icon-info el-icon--left"></i>Similar movies
                                 </el-button>
@@ -92,12 +91,14 @@
 
                 </el-tab-pane>
 
-                <!-- Test area -->
+                <!-- Debug area -->
                 <el-tab-pane label="DataTestArea" name="third">
 
                     <!-- == == == == == ==== == ==== == ==== == ==== == ==== == ==== == ==-->
 
-                    <!-- focus -->
+                    <!-- You can see what your data(only defined in vue) look like just change the data property -->
+                    <!-- You can see the columns and rows realtime-->
+                    <!-- The columns(prop) is required -->
                     <el-table :data="recommended" style="width: 100%">
                         <el-table-column prop="movie_id" label="movie_id" width="180">
                         </el-table-column>
@@ -115,8 +116,7 @@
             </el-tabs>
             <!-- tab -->
 
-
-            <!-- guess you like -->
+            <!-- guess what you like -->
             <el-drawer title="Guess you may like these movies...." :visible.sync="drawer" direction="btt">
 
                 <el-row :gutter="20">
@@ -210,20 +210,41 @@
             data: function () {
                 return {
 
+                    // for requesting the API
                     baseurl: 'http://127.0.0.1:8000',
                     genre: [],
+
+                    // store the Keywords which be selected, it can be used in refresh function
                     selected_genre: [],
+
+                    // selected algorithm, it also will be stored in backend as a global variable
                     algoSelect: 0,
+
+                    // movies waiting to rating
                     movies: [],
+
+                    // movies which have been process when click the refresh button or next button in dialog 1
+                    // Only the rated movies will be stored into the user_profile
                     selected_movies: [],
+
+                    // movies be rated or modified will be stored: 
+                    // 1.after refresh or next in dialog-1 
+                    // 2.rated movies again, and click update in recommending page
+                    // 3.movies scores that modified or removed in rated movies page
                     user_profile: [],
+
+                    // movies return by the algorithm in backend
                     recommended: [],
+
+                    // when click the similar movies button, the most 5 familiar movies 
+                    // with that movie will stored in here.
                     guess_like: [],
+
                     dialog0: true,
                     dialog1: false,
                     iconClasses: ['icon-rate-face-1', 'icon-rate-face-2', 'icon-rate-face-3'],
                     value: 2,
-                    test:[],
+                    test: [],
                     drawer: false,
                     pic_test: "https://miro.medium.com/max/5728/1*jrGtIJOcp12u53T6r5VuIA.jpeg",
                     activename: "first",
@@ -232,88 +253,95 @@
 
             methods: {
 
-                //=============== testmethod ===============
+                step1: function () {
+                    step1_value = [];
+                    step1_value.push(this.selected_genre);
+                    step1_value.push(this.algoSelect);
+                    // send the values of keywords the the selected algorithm to backend
+                    axios.post(this.baseurl + "/api/movies", step1_value).then((res) => {
+
+                        this.movies = res.data;
+                        this.dialog0 = false;
+                        this.dialog1 = true;
+
+                    })
+                },
 
 
+                // If a user didn't find any movie he watched before in the first random list, or he just want to rate more movies
+                // he may want to use the refresh function
+                // This design can help us get more user profile
+                refresh: function () {
+                    // 1. store the movies rated in selected_movies:[]
+                    this.selected_movies = this.selected_movies.concat(this.movies);
+                    axios.post(this.baseurl + "/api/refresh").then((res) => {
+                        // 2. return a new random list with the selected keywords(defined by Mak)
+                        this.movies = res.data;
+                        this.dialog0 = false;
+                        this.dialog1 = true;
 
-                //=============== testmethod ===============
+                    })
+                },
 
+                step2: function () {
+                    // 1. store the movies rated in selected_movies:[]
+                    this.selected_movies = this.selected_movies.concat(this.movies);
+                    // 2. request the backend, and remove the movies which not be rated, and store the user profile in backend
+                    axios.post(this.baseurl + "/api/profile", this.selected_movies).then((res) => {
+                        // 3.update the user profile in fronted
+                        this.user_profile = res.data;
+                        // 4. update the seleted movie with user profile
+                        this.selected_movies = this.user_profile
+                        // 5. request the recommend list with updated user profile
+                        axios.post(this.baseurl + "/api/recommend", this.user_profile).then((res) => {
+                            this.recommended = res.data;
+                            this.dialog1 = false;
+                        });
+                    });
+                },
+
+                // the steps is nearly the same as step2, just updated a new recommend list with the updated user profile
+                update: function () {
+                    this.selected_movies = this.selected_movies.concat(this.recommended);
+                    axios.post(this.baseurl + "/api/profile", this.selected_movies).then((res) => {
+                        this.user_profile = res.data;
+                        this.selected_movies = this.user_profile;
+                        axios.post(this.baseurl + "/api/recommend", this.user_profile).then((res) => {
+                            this.recommended = res.data;
+                            // this.dialog1 = false;
+                        });
+                    });
+                },
+
+                // this function is used in rated movie page.
+                // warning! The user profile are not upated until clike the button in the page
                 update_profile: function () {
                     axios.post(this.baseurl + "/api/profile", this.user_profile).then((res) => {
                         this.user_profile = res.data;
                     });
                 },
 
+                // ======function example given by TA======
+                // liked_btn: function (movie) {
+                //     let that = this;
+                //     this.liked.push(movie);
+                //     this.recommended.splice(this.recommended.findIndex(item => item.movie_id === movie.movie_id), 1);
+                //     axios.get(this.baseurl + '/api/add_recommend/' + movie.movie_id).then((res) => {
+                //         console.log(res.data);
+                //         that.recommended.push.apply(that.recommended, res.data);
+                //         that.liked.push.apply(that.liked, res.data);
+                //     })
+                // },
 
-                update: function () {
-
-                    this.selected_movies = this.selected_movies.concat(this.recommended);
-
-                    axios.post(this.baseurl + "/api/profile", this.selected_movies).then((res) => {
-                        this.user_profile = res.data;
-                        this.selected_movies = this.user_profile;
-                        axios.post(this.baseurl + "/api/recommend", this.user_profile).then((res) => {
-                            this.recommended = res.data;
-                        });
-                    });
-
-                },
-                refresh: function () {
-
-                    this.selected_movies = this.selected_movies.concat(this.movies);
-
-                    axios.post(this.baseurl + "/api/refresh", ).then((res) => {
-
-                        this.movies = res.data;
-                        this.dialog0 = false;
-                        this.dialog1 = true;
-
-                    })
-                },
-
-                step1: function () {
-                    step1_value = [];
-                    step1_value.push(this.selected_genre);
-                    step1_value.push(this.algoSelect);
-                    axios.post(this.baseurl + "/api/movies", step1_value).then((res) => {
-
-                        this.movies = res.data;
-                        this.dialog0 = false;
-                        this.dialog1 = true;
-             
-                    })
-                },
-
-                step2: function () {
-
-                    this.selected_movies = this.selected_movies.concat(this.movies);
-
-                    axios.post(this.baseurl + "/api/profile", this.selected_movies).then((res) => {
-                        this.user_profile = res.data;
-                        axios.post(this.baseurl + "/api/recommend", this.user_profile).then((res) => {
-                            this.recommended = res.data;
-                            this.dialog1 = false;
-                        
-                        });
-                    });
-                },
-
-                liked_btn: function (movie) {
-                    let that = this;
-                    this.liked.push(movie);
-                    this.recommended.splice(this.recommended.findIndex(item => item.movie_id === movie.movie_id), 1);
-                    axios.get(this.baseurl + '/api/add_recommend/' + movie.movie_id).then((res) => {
-                        console.log(res.data);
-                        that.recommended.push.apply(that.recommended, res.data);
-                        that.liked.push.apply(that.liked, res.data);
-                    })
-                },
-
-                // focus
+                // Quick search location in body: @click="guess_U_like(o) 
+                // input: the movie where the button is
+                // Quick search location in body:  <!-- guess what you like -->
+                // output: the most n similar movies with the target movie
+                // the data display in the drawer will be updated, then drawer will appear
                 guess_U_like: function (movie) {
                     axios.get(this.baseurl + '/api/guesslike/' + movie.movie_id).then((res) => {
-                        this.drawer = true;
                         this.guess_like = res.data;
+                        this.drawer = true;
                     })
                 }
 
