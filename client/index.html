@@ -16,7 +16,7 @@
     <el-menu mode="horizontal" default-active="1" background-color="#545c64" text-color="#fff"
         active-text-color="#ffd04b">
         <el-menu-item index="1">Movie Recommender System</el-menu-item>
-        <el-menu-item index="2">Algorithm now is : {{this.algoSelect}}</el-menu-item>
+        <el-menu-item index="2">Algorithm Now Is : {{this.algoSelect}}</el-menu-item>
     </el-menu>
     <el-container>
         <el-main>
@@ -26,11 +26,11 @@
 
                 <!-- RecommendPage -->
                 <el-tab-pane label="Recommend Movies" name="first">
-                    <el-row :gutter="20">
+                    <el-row :gutter="30">
 
                         <el-col :span="4" v-for="o in recommended" :key="o.movie_id" :offset="0">
                             <el-card :body-style="{ padding: '0px' }"
-                                style="margin-top:15px;height:430px;overflow:auto;position:relative">
+                                style="margin-top:15px;height:420px;overflow:auto;position:relative;text-align: center;">
 
                                 <!-- explanationIndex -->
                                 <!-- Place where show the explanation why recommond the movies -->
@@ -53,48 +53,88 @@
                                 <h4 style="padding:0 10px;margin:0">{{o.movie_title}}</h4>
                                 <h6 style="padding:0 10px;margin:0.5em">{{ o.release_date }}</h6>
 
-                                <div plain style="position:absolute;bottom:5px;left:5px">
 
-                                    <el-rate v-model="o.score" style="padding:10px 10px;"></el-rate>
 
-                                    <el-button type="primary" @click="guess_U_like(o)">
-                                        <i class="el-icon-info el-icon--left"></i>Similar movies
-                                    </el-button>
+                                <div plain style="position:absolute;bottom:5px;">
+
+                                    <div style="margin: 5px;text-align: center;">
+                                        <el-rate v-model="o.score" style="padding:10px 10px;" :colors="colors">
+                                        </el-rate>
+                                    </div>
+
+                                    <div style="margin: 5px;text-align: center">
+                                        <el-button type="primary" @click="guess_U_like(o)" icon="el-icon-star-on">
+                                            Similar
+                                        </el-button>
+                                    </div>
+
                                 </div>
+
+
+
                             </el-card>
 
                         </el-col>
 
                     </el-row>
 
-                    <el-button type="danger" @click="update">
-                        <i class="el-icon-info el-icon--left"></i>Update
-                    </el-button>
+                    <div style="text-align: center;
+                    line-height: 80px;">
+                        <el-button type="success" @click="update">
+                            <i class="el-icon-thumb
+                            el-icon--left"></i>Update Recommend
+                        </el-button>
+                    </div>
+
                 </el-tab-pane>
 
                 <!-- userProfile -->
                 <el-tab-pane label="Rated Movies (User profile)" name="second">
-                    <el-row :gutter="20">
+                    <el-row :gutter="30">
                         <el-col :span="4" v-for="o in user_profile" :key="o.movie_id" :offset="0">
                             <el-card :body-style="{ padding: '0px' }"
                                 style="margin-top:15px;height:450px;overflow:auto;position:relative">
                                 <el-image style="width: 100%;height:240px;" :src="o.poster_url" fit="cover"></el-image>
                                 <h4 style="padding:0 10px;margin:0">{{o.movie_title}}</h4>
                                 <h6 style="padding:0 10px;margin:0.5em">{{ o.release_date }}</h6>
-                                <el-rate v-model="o.score" style="padding:10px 10px;"></el-rate>
-                                <el-button type="danger" @click="o.score=0">
-                                    <i class="el-icon-info el-icon--left"></i>remove
-                                </el-button>
-                                <el-button type="primary" @click="guess_U_like(o)">
-                                    <i class="el-icon-info el-icon--left"></i>Similar movies
-                                </el-button>
+
+
+                                <div plain style="position:absolute;bottom:5px;">
+
+
+                                    <div style="margin: 5px;text-align: center;">
+                                        <el-rate v-model="o.score" style="padding:10px 10px;" :colors="colors">
+                                        </el-rate>
+                                    </div>
+
+                                    <div style="margin: 5px;text-align: center;">
+                                        <el-button type="danger" @click="o.score=0" icon="el-icon-delete" circle>
+                                        </el-button>
+
+                                    </div>
+
+                                    <div style="margin: 5px;text-align: center">
+                                        <el-button type="primary" @click="guess_U_like(o)" icon="el-icon-star-on">
+                                            Similar
+                                        </el-button>
+                                    </div>
+
+                                </div>
+
+
                             </el-card>
                         </el-col>
                     </el-row>
 
-                    <el-button type="danger" @click="update_profile">
-                        <i class="el-icon-info el-icon--left"></i>Update
-                    </el-button>
+
+
+                    <div style="text-align: center;
+                    line-height: 80px;">
+                        <el-button type="success" @click="update_profile">
+                            <i class="el-icon-thumb
+                            el-icon--left"></i>Update Rating
+                        </el-button>
+                    </div>
 
                 </el-tab-pane>
 
@@ -140,9 +180,7 @@
 
             </el-drawer>
 
-
-
-
+            <!-- focus -->
             <!--  Dialog0-->
             <el-dialog title="Please choose any genre you're interested in." :visible="dialog0" width="60%"
                 :show-close="false">
@@ -161,18 +199,18 @@
 
                 <span slot="footer" class="dialog-footer">
                     <!-- The selected box for algorithm -->
-                    <el-radio-group v-model="algoSelect">
-                        <el-radio-button label="0">algo-1-itemtoitem</el-radio-button>
-                        <el-radio-button label="1">algo-1</el-radio-button>
+                    <el-radio-group v-model="algoSelect" fill="primary">
+                        <el-radio-button label="0">algo1-item2item</el-radio-button>
+                        <el-radio-button label="1">algo2-contentBased</el-radio-button>
                     </el-radio-group>
-                    <el-button type="danger" @click="step1" plain :disabled="step1_show" style="min-width:128px">Next
+                    <el-button type="success" @click="step1" plain :disabled="step1_show" style="min-width:128px">Next
                     </el-button>
                 </span>
             </el-dialog>
 
             <!--  Dialog1-->
             <el-dialog title="Please rate the following movies." :visible="dialog1" width="80%" :show-close="false">
-                <el-row :gutter="20">
+                <el-row :gutter="30">
 
                     <el-steps :active=1 finish-status="success">
                         <el-step title="Step 1"></el-step>
@@ -184,16 +222,19 @@
                         <el-card :body-style="{ padding: '0px' }" style="margin-top:15px;height:368px;overflow:auto">
                             <el-image style="width: 100%;height:240px;" :src="o.poster_url" fit="cover"></el-image>
                             <h4 style="padding:0 10px;margin:0">{{o.movie_title}}</h4>
-                            <el-rate v-model="o.score" style="padding:10px 10px;"></el-rate>
+                            <el-rate style="padding:10px 10px;" v-model="o.score" :colors="colors">
+                            </el-rate>
+
                         </el-card>
                     </el-col>
                 </el-row>
 
                 <span slot="footer" class="dialog-footer">
-                    <el-button type="danger" @click="refresh" style="width:128px">
-                        refresh
+                    <el-button type="#409EFF" @click="refresh" style="width:128px" round>
+                        <i class="el-icon-refresh"></i>
+                        Refresh
                     </el-button>
-                    <el-button type="danger" @click="step2" plain :disabled="step2_show" style="width:128px">Next
+                    <el-button type="success" @click="step2" plain :disabled="step2_show" style="width:128px">Next
                     </el-button>
                 </span>
             </el-dialog>
@@ -247,6 +288,9 @@
                     // with that movie will stored in here.
                     guess_like: [],
 
+                    colors: ['#99A9BF', '#F7BA2A', '#FF9900'],
+                    // textRate:['good', 'bad', 'good', 'a', 'b'],
+                    iconClasses: ['#99A9BF', '#F7BA2A', '#FF9900'],
                     dialog0: true,
                     dialog1: false,
                     iconClasses: ['icon-rate-face-1', 'icon-rate-face-2', 'icon-rate-face-3'],
@@ -262,11 +306,17 @@
 
                 step1: function () {
                     step1_value = [];
+                    // 1. stored the selected keyword 
                     step1_value.push(this.selected_genre);
+                    // 2. store the selected algo
                     step1_value.push(this.algoSelect);
                     // send the values of keywords the the selected algorithm to backend
                     axios.post(this.baseurl + "/api/movies", step1_value).then((res) => {
-
+                        if (this.algoSelect == 0) {
+                            this.algoSelect = "Item2item"
+                        } else {
+                            this.algoSelect = "ContentBased"
+                        }
                         this.movies = res.data;
                         this.dialog0 = false;
                         this.dialog1 = true;
@@ -375,12 +425,19 @@
                             scores++
                         }
                     }
+                    for (let i of this.selected_movies) {
+                        if (i['score'] > 0) {
+                            scores++
+                        }
+                    }
                     console.log(scores);
                     if (scores >= 1) {
                         return false;
                     } else {
                         return true
-                    }
+                    };
+
+
                 },
             }
         })
