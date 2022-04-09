@@ -21,7 +21,6 @@ from surprise import Dataset
 from entities.Movie import Movie
 from utils import item_representation_based_movie_plots
 
-
 import  recommendationAlgorithms.content_based_recommendation as content_based
 from  recommendationAlgorithms.item_to_vectore_reommendation import item2vec, item2vec_get_items
 
@@ -41,6 +40,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+algo_selected = 0
 
 # =======================DATA=========================
 data = pd.read_csv("data/movie_info_new.csv")
@@ -89,29 +89,27 @@ def get_genre():
 
 #== == == == == == == == == 2. Get Keywords/ Genres for initial selection  
 @app.post("/api/movies")
-def get_movies(genre: list):
-    print(genre)
-    query_str = " or ".join(map(map_genre, genre))
-    results = data.query(query_str)
+def get_movies(firstinput: list):
+
+    keywords = firstinput[0]
+
+    global algo_selected 
+
+    algo_selected = firstinput[1]
+
+    print(keywords)
+    # _, movie_TF_IDF_vector, _ = item_representation_based_movie_plots(data)
+    movie_TF_IDF_vector = pd.read_json("tfidf_mat.json")
+    # s = set()
+    for kw in keywords:
+        for item in movie_TF_IDF_vector[movie_TF_IDF_vector[kw]>0.2].movieId:
+            init_set.add(item)
+    res = np.random.choice(list(init_set), 18)
+    results = data[data['movie_id'].isin(res)]
     results.loc[:, 'score'] = None
     results = results.sample(18).loc[:, ['movie_id', 'movie_title', 'release_date', 'poster_url', 'score']]
     return json.loads(results.to_json(orient="records"))
 
-# @app.post("/api/movies")
-# def get_movies(keywords: list):
-#     print(keywords)
-#     # _, movie_TF_IDF_vector, _ = item_representation_based_movie_plots(data)
-#     movie_TF_IDF_vector = pd.read_json("tfidf_mat.json")
-#     # s = set()
-#     for kw in keywords:
-#         for item in movie_TF_IDF_vector[movie_TF_IDF_vector[kw]>0.2].movieId:
-#             init_set.add(item)
-#     res = np.random.choice(list(init_set), 18)
-#     results = data[data['movie_id'].isin(res)]
-#     results.loc[:, 'score'] = None
-#     results = results.loc[:, ['movie_id', 'movie_title', 'poster_url', 'score']]
-#     print(results)
-#     return json.loads(results.to_json(orient="records"))
 #== == == == == == == == == 3. Get Recommendation
 @app.post("/api/recommend")
 def get_recommend(movies: List[Movie]):
@@ -141,8 +139,8 @@ def get_recommend(movies: List[Movie]):
     """     
 
     #TODO: at the moment the user id is hardcoded -> should be provided by the function call
-    algorithm =2
-    if algorithm==1: 
+    
+    if algo_selected==1: 
         #Here the content based algorithm is called 
         # recommendations, user_profile = content_based.get_recommend_content_based_approach(movies, data, genre_list, user_id, round)
         recommendations, user_profile = content_based.get_recommend_content_based_approach(movies, data, genre_list, 944, 1)
@@ -183,6 +181,7 @@ async def get_similar_items(item_id,algorithm, user_id):
     else: 
         #TODO: implement item-to-factor algorithm
         result = item2vec_get_items(item_id, data, model)
+        print("result number:",result)
 
     return result
 
@@ -201,4 +200,67 @@ async def update_recommend(item_id, algorithm: int, round: int ):
     # 1. Remove the entry from the database 
     # 2. Recalculate the recommendation list and return to the user 
 
+
+
+@app.post("/api/refresh")
+def get_movies(genre: list):
+    print("this is refresh", genre)
+    query_str = " or ".join(map(map_genre, genre))
+    results = data.query(query_str)
+    results.loc[:, 'score'] = 0
+    results = results.sample(
+        18).loc[:, ['movie_id', 'movie_title', 'release_date', 'poster_url', 'score']]
+
+    print(results)
+
+    return json.loads(results.to_json(orient="records"))
+
+# try to just store the movies which have rated
+
+
+@app.post("/api/profile")
+def get_profile(movies: List[Movie]):
+    movie_stored = []
+    for movie in movies:
+        if movie.score > 0:
+            movie_stored.append(movie)
+    if len(movie_stored)==0:
+        return None
+        
+    restest = [int(movie.movie_id) for movie in movie_stored]
+    rec_movies = data.loc[data['movie_id'].isin(restest)]
+    if 'score' not in rec_movies.columns:
+        rec_movies.loc[:, 'score'] = 0
+
+    for i in movie_stored:
+        rec_movies.score[rec_movies.movie_id == i.movie_id] = i.score
+    rec_movies.loc[:, 'rating'] = 0
+    results = rec_movies.loc[:, ['movie_id', 'movie_title',
+                                   'score', 'rating']]
+
+    return json.loads(results.to_json(orient="records"))
+
+
+@app.post("/api/explain")
+def get_explaination(movies: List[Movie]):
+   
+    index = []
+    index.append(
+        int(sorted(movies, key=lambda i: i.score, reverse=True)[0].movie_id))
+    results = data.loc[data['movie_id'].isin(index)]
+
+    return json.loads(results.to_json(orient="records"))
+
+
+@app.get("/api/guesslike/{movie_id}")
+async def add_recommend(movie_id):
+    print(movie_id)
+    res = get_similar_items(str(movie_id), n=5)
+    res = [int(i) for i in res]
+    rec_movies = data.loc[data['movie_id'].isin(res)]
+    rec_movies.loc[:, 'like'] = None
+    results = rec_movies.loc[:, [
+        'movie_id', 'movie_title', 'release_date', 'poster_url', 'like']]
+
+    return json.loads(results.to_json(orient="records"))
 
