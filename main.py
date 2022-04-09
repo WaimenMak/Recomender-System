@@ -107,7 +107,7 @@ def get_movies(firstinput: list):
     res = np.random.choice(list(init_set), 18)
     results = data[data['movie_id'].isin(res)]
     results.loc[:, 'score'] = None
-    results = results.sample(18).loc[:, ['movie_id', 'movie_title', 'release_date', 'poster_url', 'score']]
+    results = results.sample(18).loc[:, ['movie_id', 'movie_title',  'poster_url', 'score']]
     return json.loads(results.to_json(orient="records"))
 
 #== == == == == == == == == 3. Get Recommendation
