@@ -155,7 +155,7 @@
                 <span slot="footer" class="dialog-footer">
                     <!-- The selected box for algorithm -->
                     <el-radio-group v-model="algoSelect">
-                        <el-radio-button label="0">algo-0</el-radio-button>
+                        <el-radio-button label="0">algo-1-itemtoitem</el-radio-button>
                         <el-radio-button label="1">algo-1</el-radio-button>
                     </el-radio-group>
                     <el-button type="danger" @click="step1" plain :disabled="step1_show" style="min-width:128px">Next
@@ -262,7 +262,7 @@
 
                     this.selected_movies = this.selected_movies.concat(this.movies);
 
-                    axios.post(this.baseurl + "/api/refresh", this.selected_genre).then((res) => {
+                    axios.post(this.baseurl + "/api/refresh", ).then((res) => {
 
                         this.movies = res.data;
                         this.dialog0 = false;
