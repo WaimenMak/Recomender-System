@@ -16,7 +16,7 @@
     <el-menu mode="horizontal" default-active="1" background-color="#545c64" text-color="#fff"
         active-text-color="#ffd04b">
         <el-menu-item index="1">Movie Recommender System</el-menu-item>
-        <el-menu-item index="2">Algorithm now is : {{this.algoSelect}}</el-menu-item>
+        <el-menu-item index="2">Algorithm Now Is : {{this.algoSelect}}</el-menu-item>
     </el-menu>
     <el-container>
         <el-main>
@@ -26,18 +26,25 @@
 
                 <!-- RecommendPage -->
                 <el-tab-pane label="Recommend Movies" name="first">
-                    <el-row :gutter="20">
-                      
+                    <el-row :gutter="30">
+
                         <el-col :span="4" v-for="o in recommended" :key="o.movie_id" :offset="0">
                             <el-card :body-style="{ padding: '0px' }"
-                                style="margin-top:15px;height:430px;overflow:auto;position:relative">
+                                style="margin-top:15px;height:420px;overflow:auto;position:relative;text-align: center;">
 
+                                <!-- explanationIndex -->
+                                <!-- Place where show the explanation why recommond the movies -->
                                 <el-popover placement="right" title="It is because you have rated this movie...."
                                     width="200" trigger="hover" content="这是一段内容,这是一段内容,这是一段内容,这是一段内容。">
 
-                                    <el-image style="width: 100%;height:240px;" :src="pic_test" fit="cover"></el-image>
+                                    <!-- cannot be changed! it is used to define the hover trigger place-->
                                     <el-image style="width: 100%;height:240px;" :src="o.poster_url" fit="cover"
                                         slot="reference"></el-image>
+                                    <!-- cannot be changed! -->
+
+                                    <!-- You can change and add the explanation below,   -->
+                                    <!-- the explanation data be must include in recommended:[] -->
+                                    <el-image style="width: 100%;height:240px;" :src="pic_test" fit="cover"></el-image>
                                     <h4 style="padding:0 10px;margin:0">{{o.movie_title}}</h4>
                                     <h6 style="padding:0 10px;margin:0.5em">{{ o.release_date }}</h6>
 
@@ -46,58 +53,99 @@
                                 <h4 style="padding:0 10px;margin:0">{{o.movie_title}}</h4>
                                 <h6 style="padding:0 10px;margin:0.5em">{{ o.release_date }}</h6>
 
-                                <div plain style="position:absolute;bottom:5px;left:5px">
 
-                                    <el-rate v-model="o.score" style="padding:10px 10px;"></el-rate>
 
-                                    <el-button type="primary" @click="guess_U_like(o)">
-                                        <i class="el-icon-info el-icon--left"></i>Similar movies
-                                    </el-button>
+                                <div plain style="position:absolute;bottom:5px;">
+
+                                    <div style="margin: 5px;text-align: center;">
+                                        <el-rate v-model="o.score" style="padding:10px 10px;" :colors="colors">
+                                        </el-rate>
+                                    </div>
+
+                                    <div style="margin: 5px;text-align: center">
+                                        <el-button type="primary" @click="guess_U_like(o)" icon="el-icon-star-on">
+                                            Similar
+                                        </el-button>
+                                    </div>
+
                                 </div>
+
+
+
                             </el-card>
 
                         </el-col>
-                        
+
                     </el-row>
 
-                    <el-button type="danger" @click="update">
-                        <i class="el-icon-info el-icon--left"></i>Update
-                    </el-button>
+                    <div style="text-align: center;
+                    line-height: 80px;">
+                        <el-button type="success" @click="update">
+                            <i class="el-icon-thumb
+                            el-icon--left"></i>Update Recommend
+                        </el-button>
+                    </div>
+
                 </el-tab-pane>
 
                 <!-- userProfile -->
-                <el-tab-pane label="Rated Movies" name="second">
-                    <el-row :gutter="20">
+                <el-tab-pane label="Rated Movies (User profile)" name="second">
+                    <el-row :gutter="30">
                         <el-col :span="4" v-for="o in user_profile" :key="o.movie_id" :offset="0">
                             <el-card :body-style="{ padding: '0px' }"
                                 style="margin-top:15px;height:450px;overflow:auto;position:relative">
                                 <el-image style="width: 100%;height:240px;" :src="o.poster_url" fit="cover"></el-image>
                                 <h4 style="padding:0 10px;margin:0">{{o.movie_title}}</h4>
                                 <h6 style="padding:0 10px;margin:0.5em">{{ o.release_date }}</h6>
-                                <el-rate v-model="o.score" style="padding:10px 10px;"></el-rate>
-                                <el-button type="danger" @click="o.score=0">
-                                    <i class="el-icon-info el-icon--left"></i>remove
-                                </el-button>
-                                <!-- // focus -->
-                                <el-button type="primary" @click="guess_U_like(o)">
-                                    <i class="el-icon-info el-icon--left"></i>Similar movies
-                                </el-button>
+
+
+                                <div plain style="position:absolute;bottom:5px;">
+
+
+                                    <div style="margin: 5px;text-align: center;">
+                                        <el-rate v-model="o.score" style="padding:10px 10px;" :colors="colors">
+                                        </el-rate>
+                                    </div>
+
+                                    <div style="margin: 5px;text-align: center;">
+                                        <el-button type="danger" @click="o.score=0" icon="el-icon-delete" circle>
+                                        </el-button>
+
+                                    </div>
+
+                                    <div style="margin: 5px;text-align: center">
+                                        <el-button type="primary" @click="guess_U_like(o)" icon="el-icon-star-on">
+                                            Similar
+                                        </el-button>
+                                    </div>
+
+                                </div>
+
+
                             </el-card>
                         </el-col>
                     </el-row>
 
-                    <el-button type="danger" @click="update_profile">
-                        <i class="el-icon-info el-icon--left"></i>Update
-                    </el-button>
+
+
+                    <div style="text-align: center;
+                    line-height: 80px;">
+                        <el-button type="success" @click="update_profile">
+                            <i class="el-icon-thumb
+                            el-icon--left"></i>Update Rating
+                        </el-button>
+                    </div>
 
                 </el-tab-pane>
 
-                <!-- Test area -->
+                <!-- Debug area -->
                 <el-tab-pane label="DataTestArea" name="third">
 
                     <!-- == == == == == ==== == ==== == ==== == ==== == ==== == ==== == ==-->
 
-                    <!-- focus -->
+                    <!-- You can see what your data(only defined in vue) look like just change the data property -->
+                    <!-- You can see the columns and rows realtime-->
+                    <!-- The columns(prop) is required -->
                     <el-table :data="recommended" style="width: 100%">
                         <el-table-column prop="movie_id" label="movie_id" width="180">
                         </el-table-column>
@@ -115,8 +163,7 @@
             </el-tabs>
             <!-- tab -->
 
-
-            <!-- guess you like -->
+            <!-- guess what you like -->
             <el-drawer title="Guess you may like these movies...." :visible.sync="drawer" direction="btt">
 
                 <el-row :gutter="20">
@@ -133,9 +180,7 @@
 
             </el-drawer>
 
-
-
-
+            <!-- focus -->
             <!--  Dialog0-->
             <el-dialog title="Please choose any genre you're interested in." :visible="dialog0" width="60%"
                 :show-close="false">
@@ -154,18 +199,18 @@
 
                 <span slot="footer" class="dialog-footer">
                     <!-- The selected box for algorithm -->
-                    <el-radio-group v-model="algoSelect">
-                        <el-radio-button label="0">algo-1-itemtoitem</el-radio-button>
-                        <el-radio-button label="1">algo-1</el-radio-button>
+                    <el-radio-group v-model="algoSelect" fill="primary">
+                        <el-radio-button label="0">algo1-item2item</el-radio-button>
+                        <el-radio-button label="1">algo2-contentBased</el-radio-button>
                     </el-radio-group>
-                    <el-button type="danger" @click="step1" plain :disabled="step1_show" style="min-width:128px">Next
+                    <el-button type="success" @click="step1" plain :disabled="step1_show" style="min-width:128px">Next
                     </el-button>
                 </span>
             </el-dialog>
 
             <!--  Dialog1-->
             <el-dialog title="Please rate the following movies." :visible="dialog1" width="80%" :show-close="false">
-                <el-row :gutter="20">
+                <el-row :gutter="30">
 
                     <el-steps :active=1 finish-status="success">
                         <el-step title="Step 1"></el-step>
@@ -177,16 +222,19 @@
                         <el-card :body-style="{ padding: '0px' }" style="margin-top:15px;height:368px;overflow:auto">
                             <el-image style="width: 100%;height:240px;" :src="o.poster_url" fit="cover"></el-image>
                             <h4 style="padding:0 10px;margin:0">{{o.movie_title}}</h4>
-                            <el-rate v-model="o.score" style="padding:10px 10px;"></el-rate>
+                            <el-rate style="padding:10px 10px;" v-model="o.score" :colors="colors">
+                            </el-rate>
+
                         </el-card>
                     </el-col>
                 </el-row>
 
                 <span slot="footer" class="dialog-footer">
-                    <el-button type="danger" @click="refresh" style="width:128px">
-                        refresh
+                    <el-button type="#409EFF" @click="refresh" style="width:128px" round>
+                        <i class="el-icon-refresh"></i>
+                        Refresh
                     </el-button>
-                    <el-button type="danger" @click="step2" plain :disabled="step2_show" style="width:128px">Next
+                    <el-button type="success" @click="step2" plain :disabled="step2_show" style="width:128px">Next
                     </el-button>
                 </span>
             </el-dialog>
@@ -210,20 +258,44 @@
             data: function () {
                 return {
 
+                    // for requesting the API
                     baseurl: 'http://127.0.0.1:8000',
                     genre: [],
+
+                    // store the Keywords which be selected, it can be used in refresh function
                     selected_genre: [],
+
+                    // selected algorithm, it also will be stored in backend as a global variable
                     algoSelect: 0,
+
+                    // movies waiting to rating
                     movies: [],
+
+                    // movies which have been process when click the refresh button or next button in dialog 1
+                    // Only the rated movies will be stored into the user_profile
                     selected_movies: [],
+
+                    // movies be rated or modified will be stored: 
+                    // 1.after refresh or next in dialog-1 
+                    // 2.rated movies again, and click update in recommending page
+                    // 3.movies scores that modified or removed in rated movies page
                     user_profile: [],
+
+                    // movies return by the algorithm in backend
                     recommended: [],
+
+                    // when click the similar movies button, the most 5 familiar movies 
+                    // with that movie will stored in here.
                     guess_like: [],
+
+                    colors: ['#99A9BF', '#F7BA2A', '#FF9900'],
+                    // textRate:['good', 'bad', 'good', 'a', 'b'],
+                    iconClasses: ['#99A9BF', '#F7BA2A', '#FF9900'],
                     dialog0: true,
                     dialog1: false,
                     iconClasses: ['icon-rate-face-1', 'icon-rate-face-2', 'icon-rate-face-3'],
                     value: 2,
-                    test:[],
+                    test: [],
                     drawer: false,
                     pic_test: "https://miro.medium.com/max/5728/1*jrGtIJOcp12u53T6r5VuIA.jpeg",
                     activename: "first",
@@ -232,88 +304,103 @@
 
             methods: {
 
-                //=============== testmethod ===============
+                step1: function () {
+                    step1_value = [];
+                    // 1. stored the selected keyword 
+                    step1_value.push(this.selected_genre);
+                    // 2. store the selected algo
+                    step1_value.push(this.algoSelect);
+                    // send the values of keywords the the selected algorithm to backend
+                    axios.post(this.baseurl + "/api/movies", step1_value).then((res) => {
+                        if (this.algoSelect == 0) {
+                            this.algoSelect = "Item2item"
+                        } else {
+                            this.algoSelect = "ContentBased"
+                        }
+                        this.movies = res.data;
+                        this.dialog0 = false;
+                        this.dialog1 = true;
+
+                    })
+                },
 
 
+                // If a user didn't find any movie he watched before in the first random list, or he just want to rate more movies
+                // he may want to use the refresh function
+                // This design can help us get more user profile
+                refresh: function () {
+                    // 1. store the movies rated in selected_movies:[]
+                    this.selected_movies = this.selected_movies.concat(this.movies);
+                    axios.post(this.baseurl + "/api/refresh").then((res) => {
+                        // 2. return a new random list with the selected keywords(defined by Mak)
+                        this.movies = res.data;
+                        this.dialog0 = false;
+                        this.dialog1 = true;
 
-                //=============== testmethod ===============
+                    })
+                },
 
+                step2: function () {
+                    // 1. store the movies rated in selected_movies:[]
+                    this.selected_movies = this.selected_movies.concat(this.movies);
+                    // 2. request the backend, and remove the movies which not be rated, and store the user profile in backend
+                    axios.post(this.baseurl + "/api/profile", this.selected_movies).then((res) => {
+                        // 3.update the user profile in fronted
+                        this.user_profile = res.data;
+                        // 4. update the seleted movie with user profile
+                        this.selected_movies = this.user_profile
+                        // 5. request the recommend list with updated user profile
+                        axios.post(this.baseurl + "/api/recommend", this.user_profile).then((res) => {
+                            this.recommended = res.data;
+                            this.dialog1 = false;
+                        });
+                    });
+                },
+
+                // the steps is nearly the same as step2, just updated a new recommend list with the updated user profile
+                update: function () {
+                    this.selected_movies = this.selected_movies.concat(this.recommended);
+                    axios.post(this.baseurl + "/api/profile", this.selected_movies).then((res) => {
+                        this.user_profile = res.data;
+                        this.selected_movies = this.user_profile;
+                        axios.post(this.baseurl + "/api/recommend", this.user_profile).then((res) => {
+                            this.recommended = res.data;
+                            // this.dialog1 = false;
+                        });
+                    });
+                },
+
+                // this function is used in rated movie page.
+                // warning! The user profile are not upated until clike the button in the page
                 update_profile: function () {
                     axios.post(this.baseurl + "/api/profile", this.user_profile).then((res) => {
                         this.user_profile = res.data;
                     });
                 },
 
+                // ======function example given by TA======
+                // liked_btn: function (movie) {
+                //     let that = this;
+                //     this.liked.push(movie);
+                //     this.recommended.splice(this.recommended.findIndex(item => item.movie_id === movie.movie_id), 1);
+                //     axios.get(this.baseurl + '/api/add_recommend/' + movie.movie_id).then((res) => {
+                //         console.log(res.data);
+                //         that.recommended.push.apply(that.recommended, res.data);
+                //         that.liked.push.apply(that.liked, res.data);
+                //     })
+                // },
+                // ======function example given by TA======
 
-                update: function () {
 
-                    this.selected_movies = this.selected_movies.concat(this.recommended);
-
-                    axios.post(this.baseurl + "/api/profile", this.selected_movies).then((res) => {
-                        this.user_profile = res.data;
-                        this.selected_movies = this.user_profile;
-                        axios.post(this.baseurl + "/api/recommend", this.user_profile).then((res) => {
-                            this.recommended = res.data;
-                        });
-                    });
-
-                },
-                refresh: function () {
-
-                    this.selected_movies = this.selected_movies.concat(this.movies);
-
-                    axios.post(this.baseurl + "/api/refresh", ).then((res) => {
-
-                        this.movies = res.data;
-                        this.dialog0 = false;
-                        this.dialog1 = true;
-
-                    })
-                },
-
-                step1: function () {
-                    step1_value = [];
-                    step1_value.push(this.selected_genre);
-                    step1_value.push(this.algoSelect);
-                    axios.post(this.baseurl + "/api/movies", step1_value).then((res) => {
-
-                        this.movies = res.data;
-                        this.dialog0 = false;
-                        this.dialog1 = true;
-             
-                    })
-                },
-
-                step2: function () {
-
-                    this.selected_movies = this.selected_movies.concat(this.movies);
-
-                    axios.post(this.baseurl + "/api/profile", this.selected_movies).then((res) => {
-                        this.user_profile = res.data;
-                        axios.post(this.baseurl + "/api/recommend", this.user_profile).then((res) => {
-                            this.recommended = res.data;
-                            this.dialog1 = false;
-                        
-                        });
-                    });
-                },
-
-                liked_btn: function (movie) {
-                    let that = this;
-                    this.liked.push(movie);
-                    this.recommended.splice(this.recommended.findIndex(item => item.movie_id === movie.movie_id), 1);
-                    axios.get(this.baseurl + '/api/add_recommend/' + movie.movie_id).then((res) => {
-                        console.log(res.data);
-                        that.recommended.push.apply(that.recommended, res.data);
-                        that.liked.push.apply(that.liked, res.data);
-                    })
-                },
-
-                // focus
+                // Quick search location in body: @click="guess_U_like(o) 
+                // input: the movie where the button is
+                // Quick search location in body:  <!-- guess what you like -->
+                // output: the most n similar movies with the target movie
+                // the data display in the drawer will be updated, then drawer will appear
                 guess_U_like: function (movie) {
                     axios.get(this.baseurl + '/api/guesslike/' + movie.movie_id).then((res) => {
-                        this.drawer = true;
                         this.guess_like = res.data;
+                        this.drawer = true;
                     })
                 }
 
@@ -338,12 +425,19 @@
                             scores++
                         }
                     }
+                    for (let i of this.selected_movies) {
+                        if (i['score'] > 0) {
+                            scores++
+                        }
+                    }
                     console.log(scores);
                     if (scores >= 1) {
                         return false;
                     } else {
                         return true
-                    }
+                    };
+
+
                 },
             }
         })

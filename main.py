@@ -271,16 +271,16 @@ def get_explaination(movies: List[Movie]):
 
     return json.loads(results.to_json(orient="records"))
 
-
 @app.get("/api/guesslike/{movie_id}")
 async def add_recommend(movie_id):
-    print(movie_id)
-    res = get_similar_items(str(movie_id), n=5)
-    res = [int(i) for i in res]
-    rec_movies = data.loc[data['movie_id'].isin(res)]
-    rec_movies.loc[:, 'like'] = None
-    results = rec_movies.loc[:, [
-        'movie_id', 'movie_title', 'release_date', 'poster_url', 'like']]
 
-    return json.loads(results.to_json(orient="records"))
+    return None
+    # print(movie_id)
+    # res = get_similar_items_like(str(movie_id), n=6)
+    # res = [int(i) for i in res]
+    # rec_movies = data.loc[data['movie_id'].isin(res)]
+    # rec_movies.loc[:, 'like'] = None
+    # results = rec_movies.loc[:, [
+    #     'movie_id', 'movie_title', 'poster_url', 'like']]
 
+    # return json.loads(results.to_json(orient="records"))
