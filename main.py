@@ -106,8 +106,8 @@ def get_movies(firstinput: list):
             init_set.add(item)
     res = np.random.choice(list(init_set), 18)
     results = data[data['movie_id'].isin(res)]
-    results.loc[:, 'score'] = None
-    results = results.sample(18).loc[:, ['movie_id', 'movie_title',  'poster_url', 'score']]
+    results.loc[:, 'score'] = 0
+    results = results.sample(18).loc[:, ['movie_id', 'movie_title', 'poster_url', 'score']]
     return json.loads(results.to_json(orient="records"))
 
 #== == == == == == == == == 3. Get Recommendation
@@ -202,6 +202,10 @@ async def update_recommend(item_id, algorithm: int, round: int ):
 
 
 
+#TODO: -> Refresh must be changed to the new dataset -> else it will not be working 
+# Each refresh: returns just a new list of moview based on the initial keyword selection 
+# Always returns 18 movies
+
 # @app.post("/api/refresh")
 # def get_movies(genre: list):
 #     print("this is refresh", genre)
@@ -219,7 +223,7 @@ async def update_recommend(item_id, algorithm: int, round: int ):
 def get_movies():
     res = np.random.choice(list(init_set), 18)
     results = data[data['movie_id'].isin(res)]
-    results.loc[:, 'score'] = None
+    results.loc[:, 'score'] = 0
     results = results.sample(18).loc[:, ['movie_id', 'movie_title',  'poster_url', 'score']]
     return json.loads(results.to_json(orient="records"))
 
