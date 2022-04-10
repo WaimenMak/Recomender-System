@@ -52,7 +52,7 @@ def item2vec(movies, data, model, user_id, init_set, n, round):
     # score = int(sorted(movies, key=lambda i: i['score'], reverse=True)[0]['score'])
 
     # user_add(iid, score)
-    # user_add_content_based_approach(movies, user_id, round)
+    user_add_content_based_approach(movies, user_id, round)
     # s = set()
     ls = []
     for movie in movies:
@@ -88,7 +88,7 @@ def item2vec(movies, data, model, user_id, init_set, n, round):
         res = [int(i) for i in res]
         rec_movies = data.loc[data['movie_id'].isin(res)]
         # print(rec_movies)
-        rec_movies.loc[:, 'score'] = None
+        rec_movies.loc[:, 'score'] = 0
         rec_movies.loc[:, 'explaination'] = "Choosen from your keywords"
         results = rec_movies.loc[:, ['movie_id', 'movie_title', 'poster_url', "explaination"]]
         return json.loads(results.to_json(orient="records"))
@@ -118,9 +118,9 @@ def item2vec_get_items(iid, data, model):
     res = [int(item[0]) for item in res]
     rec_movies = data.loc[data['movie_id'].isin(res)]
     print(rec_movies)
-    rec_movies.loc[:, 'like'] = None
+    rec_movies.loc[:, 'score'] = 0
     rec_movies.loc[:, 'explaination'] = "5 most similar movies"
-    results = rec_movies.loc[:, ['movie_id', 'movie_title', 'like', "explaination"]]
+    results = rec_movies.loc[:,  ['movie_id', 'movie_title', 'poster_url', "explaination"]]
     return json.loads(results.to_json(orient="records"))
 
 
