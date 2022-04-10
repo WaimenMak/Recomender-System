@@ -27,6 +27,8 @@ import recommendationAlgorithms.content_based_recommendation as content_based
 from recommendationAlgorithms.item_to_vectore_reommendation import item2vec, item2vec_get_items
 
 from gensim.models import Word2Vec
+from scipy.stats import ttest_ind
+import json
 
 import os
 
@@ -184,11 +186,11 @@ def get_recommend(movies: List[Movie]):
         # Here the content based algorithm is called
         # recommendations, user_profile = content_based.get_recommend_content_based_approach(movies, data, genre_list, user_id, round)
         recommendations, user_profile = content_based.get_recommend_content_based_approach(
-            movies, data, genre_list, 944, round)
+            movies, data, genre_list, user, round)
     else:
         # TODO: implement item-to-factor algorithm
         recommendations = item2vec(
-            movies, data, model, 944, init_set, 18, round)
+            movies, data, model, user, init_set, 18, round)
 
     return recommendations
 
@@ -228,7 +230,7 @@ async def get_similar_items(item_id):
     """
     if algo_selected == "1":
         # Here the content based algorithm is called
-        print("algo1--- 1")
+        print("algo1--- -> content based approach")
         result = content_based.get_similar_items_content_based_approach(
             item_id, data, genre_list, user_id=user)
     else:
@@ -345,13 +347,14 @@ def update_user_profile_in_database(movies: List[Movie], user_id: int):
 
 @app.post("/api/explain")
 def get_explaination(movies: List[Movie]):
-   
     index = []
     index.append(
         int(sorted(movies, key=lambda i: i.score, reverse=True)[0].movie_id))
     results = data.loc[data['movie_id'].isin(index)]
 
     return json.loads(results.to_json(orient="records"))
+
+
 
 
 @app.get("/api/guesslike/{movie_id}")
@@ -377,16 +380,50 @@ async def get_ttest():
     pass 
     # 1. Reads the data from the database 
     # 
-    # sqlConnection = SQLiteConnection()
-    # con = sqlConnection.connection
+    sqlConnection = SQLiteConnection()
+    con = sqlConnection.connection
 
-    # user_preference_df = pd.read_sql_query(f"SELECT * from runtime_u_data", con)    
+    user_preference_df = pd.read_sql_query(f"SELECT * from runtime_u_data", con)    
 
     # 2. Calculate t-Test with the data 
     #    2.1 Algo 1 vs. Algo 2 
     #    2.2. First Round vs Second Round 
 
+    print(user_preference_df)
 
+    algo1_filtered_df = user_preference_df[user_preference_df["algorithm"]==0]
+    algo2_filtered_df = user_preference_df[user_preference_df["algorithm"]==1]
+
+
+    firstround_filtered_df = user_preference_df[user_preference_df["round"]==1]
+    secondround_filtered_df = user_preference_df[user_preference_df["round"]==2]
+
+
+    #3. Calculate average value per user 
+    algo1_filtered_df_average = algo1_filtered_df.groupby("user_id")["score"].mean()
+    algo2_filtered_df_average = algo2_filtered_df.groupby("user_id")["score"].mean()
+    firstround_filtered_df_average = firstround_filtered_df.groupby("user_id")["score"].mean()
+    secondround_filtered_df_average = secondround_filtered_df.groupby("user_id")["score"].mean()
+
+
+
+    t_test_within_algo = ttest_ind(algo1_filtered_df_average, algo2_filtered_df_average)
+    t_test_within_rounds_algo = ttest_ind(firstround_filtered_df_average, secondround_filtered_df_average)
+
+
+    ret = {
+        "algo1_results":list(algo1_filtered_df_average.values),
+        "algo2_results":list(algo2_filtered_df_average.values), 
+        "firstround_results":list(firstround_filtered_df_average.values), 
+        "secondround_results":list(secondround_filtered_df_average.values), 
+        "t_test_within_algo_statistic":float( t_test_within_algo[0]), 
+        "t_test_within_algo_p_value": float(t_test_within_algo[1]), 
+        "t_test_within_rounds_statistic": float(t_test_within_rounds_algo[0]), 
+        "t_test_within_rounds_p_value": float(t_test_within_rounds_algo[1]), 
+    }
+
+
+    return json.loads(json.dumps(ret))
     # 3. For the visualisation of the result: -> 4 Charts are being displayed ->
     # Return Object should look like this: 
     # alg_comparision_algo1: [7.4 ; 4.5; 9.5 ...]

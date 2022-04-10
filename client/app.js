@@ -7,6 +7,10 @@ router.get('/',function(req,res){
   res.sendFile(path.join(__dirname+'/index.html'));
   //__dirname : It will resolve to your project folder.
 });
+router.get('/ttest',function(req,res){
+  res.sendFile(path.join(__dirname+'/t_test.html'));
+  //__dirname : It will resolve to your project folder.
+});
 
 //add the router
 app.use('/', router);

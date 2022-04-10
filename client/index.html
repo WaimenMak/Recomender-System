@@ -48,7 +48,7 @@
                                     <!-- <el-image style="width: 100%;height:240px;" :src="pic_test" fit="cover"></el-image>
                                     <h4 style="padding:0 10px;margin:0">{{o.movie_title}}</h4> -->
 
-                                    <el-container>
+                                    <el-container v-if="isItemToItem">
                                         <el-aside width="200px">
                                             <el-image style="width: 190px;height:100%;" :src="o.origin" fit="cover">
                                             </el-image>
@@ -57,11 +57,16 @@
                                             <h4 style="padding:0 10px;margin:0.5em">{{ o.explaination }}</h6>
                                         </el-main>
                                     </el-container>
+                                    <el-container v-else>
+                                        <el-main>
+                                            <h4 v-html="o.explaination" style="padding:0 10px;margin:0.5em"></h4>
+                                        </el-main>
+                                    </el-container>
 
 
                                 </el-popover>
 
-                                <h4 style="padding:0 10px;margin:0">{{o.movie_title}}</h4>
+                                <h4 style="padding:0 10px;margin:0;">{{o.movie_title}}</h4>
                                 <h6 style="padding:0 10px;margin:0.5em">{{ o.release_date }}</h6>
 
 
@@ -253,7 +258,15 @@
             </el-dialog>
         </el-main>
 
+
     </el-container>
+    <div> 
+
+        This is simple test string <br>
+        This is another lin
+
+
+    </div>
 </div>
 
 <body>
@@ -300,6 +313,7 @@
                     // when click the similar movies button, the most 5 familiar movies 
                     // with that movie will stored in here.
                     guess_like: [],
+                    isItemToItem: true, 
 
                     colors: ['#99A9BF', '#F7BA2A', '#FF9900'],
                     // textRate:['good', 'bad', 'good', 'a', 'b'],
@@ -327,8 +341,10 @@
                     axios.post(this.baseurl + "/api/movies", step1_value).then((res) => {
                         if (this.algoSelect == 0) {
                             this.algoSelect = "Item2item"
+                            this.isItemToItem = true
                         } else {
                             this.algoSelect = "ContentBased"
+                            this.isItemToItem = false
                         }
                         this.movies = res.data;
                         this.dialog0 = false;

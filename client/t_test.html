@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Assignment 2</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel='stylesheet' href='/stylesheets/style.css' />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+</head>
+
+<body>
+  <!-- Loading the charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+
+    var algo1Chart
+    var algo2Chart
+    var round1Chart
+    var round2Chart
+    document.addEventListener("DOMContentLoaded", function () {
+      const label = []
+
+      const data = {
+        labels: label,
+        datasets: [{
+          //label: 'My Second Data Set',
+          data: [],
+          backgroundColor: [
+            '#485fc7',
+          ],
+          borderColor: [
+            '#485fc7',
+          ],
+          borderWidth: 1
+        }],
+      };
+
+      const config = {
+        type: 'line',
+        data: data,
+        options: {
+          scales: {
+            x: {
+
+              title: {
+                display: true,
+                text: "User",
+                font: function (context) {
+                  var width = context.chart.width;
+                  var size = Math.round(width / 48);
+                  return {
+                    size: size,
+                    weight: 600
+                  };
+                },
+                padding: 20
+              },
+
+              ticks: {
+                font: {
+
+                  size: function (context) {
+                    var width = context.chart.width;
+                    var size = Math.round(width / 48);
+                    return size;
+                  },
+                },
+              }
+            },
+
+            y: {
+              title: {
+                display: true,
+                text: "Average Rating",
+
+                padding: 20
+              },
+
+              ticks: {
+                font: {
+                  size: function (context) {
+                    var width = context.chart.width;
+                    var size = Math.round(width / 48);
+                    return size;
+                  },
+                },
+                stepSize: 1
+              }
+
+            },
+          },
+          plugins: {
+            title: {
+              display: true,
+              text: 'Factorization Algorithm (Algo1)',
+              padding: 20
+            },
+            legend: {
+              display: false
+            },
+          },
+
+        },
+      };
+
+
+      algo1Chart = new Chart(
+        document.getElementById('algo1Chart'),
+        config
+      )
+
+      const label2 = []
+
+      const data2 = {
+        labels: label2,
+        datasets: [{
+          //label: 'My Second Data Set',
+          data: [],
+          backgroundColor: [
+            '#485fc7',
+          ],
+          borderColor: [
+            '#485fc7',
+          ],
+          borderWidth: 1
+        }],
+      };
+
+      const config2 = {
+        type: 'line',
+        data: data2,
+        options: {
+          scales: {
+            x: {
+
+              title: {
+                display: true,
+                text: "User",
+                font: function (context) {
+                  var width = context.chart.width;
+                  var size = Math.round(width / 48);
+                  return {
+                    size: size,
+                    weight: 600
+                  };
+                },
+                padding: 20
+              },
+
+              ticks: {
+                font: {
+
+                  size: function (context) {
+                    var width = context.chart.width;
+                    var size = Math.round(width / 48);
+                    return size;
+                  },
+                },
+              }
+            },
+
+            y: {
+              title: {
+                display: true,
+                text: "Average Rating",
+
+                padding: 20
+              },
+
+              ticks: {
+                font: {
+                  size: function (context) {
+                    var width = context.chart.width;
+                    var size = Math.round(width / 48);
+                    return size;
+                  },
+                },
+                stepSize: 1
+              }
+
+            },
+          },
+          plugins: {
+            title: {
+              display: true,
+              text: 'Content-Based-Algoritm-Rating (Algorithm 2) ',
+              padding: 20
+            },
+            legend: {
+              display: false
+            }
+          },
+
+        },
+      };
+
+
+      algo2Chart = new Chart(
+        document.getElementById('algo2Chart'),
+        config2
+      )
+
+      const label3 = []
+
+      const data3 = {
+        labels: label3,
+        datasets: [{
+          //label: 'My Second Data Set',
+          data: [],
+          backgroundColor: [
+            '#485fc7',
+          ],
+          borderColor: [
+            '#485fc7',
+          ],
+          borderWidth: 1
+        }],
+      };
+
+      const config3 = {
+        type: 'line',
+        data: data3,
+        options: {
+          scales: {
+            x: {
+
+              title: {
+                display: true,
+                text: "User",
+                font: function (context) {
+                  var width = context.chart.width;
+                  var size = Math.round(width / 48);
+                  return {
+                    size: size,
+                    weight: 600
+                  };
+                },
+                padding: 20
+              },
+
+              ticks: {
+                font: {
+
+                  size: function (context) {
+                    var width = context.chart.width;
+                    var size = Math.round(width / 48);
+                    return size;
+                  },
+                },
+              }
+            },
+
+            y: {
+              title: {
+                display: true,
+                text: "Average Rating",
+
+                padding: 20
+              },
+
+              ticks: {
+                font: {
+                  size: function (context) {
+                    var width = context.chart.width;
+                    var size = Math.round(width / 48);
+                    return size;
+                  },
+                },
+                stepSize: 1
+              }
+
+            },
+          },
+          plugins: {
+            title: {
+              display: true,
+              text: 'Round 1 Results',
+              padding: 20
+            },
+            legend: {
+              display: false
+            }
+          },
+
+        },
+      };
+
+
+      round1Chart = new Chart(
+        document.getElementById('round1Chart'),
+        config3
+      )
+
+      const label4 = []
+
+      const data4 = {
+        labels: label4,
+        datasets: [{
+          //label: 'My Second Data Set',
+          data: [],
+          backgroundColor: [
+            '#485fc7',
+          ],
+          borderColor: [
+            '#485fc7',
+          ],
+          borderWidth: 1
+        }],
+      };
+
+      const config4 = {
+        type: 'line',
+        data: data4,
+        options: {
+          scales: {
+            x: {
+
+              title: {
+                display: true,
+                text: "User",
+                font: function (context) {
+                  var width = context.chart.width;
+                  var size = Math.round(width / 48);
+                  return {
+                    size: size,
+                    weight: 600
+                  };
+                },
+                padding: 20
+              },
+
+              ticks: {
+                font: {
+
+                  size: function (context) {
+                    var width = context.chart.width;
+                    var size = Math.round(width / 48);
+                    return size;
+                  },
+                },
+              }
+            },
+
+            y: {
+              title: {
+                display: true,
+                text: "Average Rating",
+
+                padding: 20
+              },
+
+              ticks: {
+                font: {
+                  size: function (context) {
+                    var width = context.chart.width;
+                    var size = Math.round(width / 48);
+                    return size;
+                  },
+                },
+                stepSize: 1
+              }
+
+            },
+          },
+          plugins: {
+            title: {
+              display: true,
+              text: 'Round 2 Results',
+              padding: 20
+            },
+            legend: {
+              display: false
+            }
+          },
+
+        },
+      };
+
+
+      round2Chart = new Chart(
+        document.getElementById('round2Chart'),
+        config4
+      )
+    })
+  </script>
+  <!-- <script src="/javascripts/barchartVacation.js"></script>
+  <script src="/javascripts/timeSeries.js"></script>
+  <script src="/javascripts/piechartGender.js"></script> -->
+  <!-- Actual Website Starts -->
+  <section class="section">
+    <section>
+      <div class="container">
+        <div class="tile is-ancestor">
+          <div class="tile is-6 is-parent is-vertical">
+            <div class="tile is-child box">
+              <canvas id="algo1Chart"></canvas>
+            </div>
+            <div class="tile is-child box">
+              <canvas id="algo2Chart"></canvas>
+            </div>
+          </div>
+          <div class="tile is-6 is-parent is-vertical">
+            <div class="tile is-child box">
+              <canvas id="round1Chart"></canvas>
+            </div>
+            <div class="tile is-child box">
+              <canvas id="round2Chart"></canvas>
+            </div>
+            <div class="tile is-child box">
+              <div>TODO: Display the Results of the t-test</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+</body>
+
+<script>
+  //Measuring the time from start to end it takes for the user to complete the survey
+  var startTime;
+  var endTime;
+
+
+  function updateChart(chart, labelList, dataList) {
+    console.log(chart)
+    chart.data.labels = labelList;
+
+    chart.data.datasets.forEach((dataset) => {
+      dataset.data = dataList;
+    });
+    chart.update();
+
+  }
+
+  async function updateStatistics() {
+    var response = await fetch("http://127.0.0.1:8000/api/ttest", {
+      method: "GET",
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    });
+
+    var data = await response.json()
+
+    var algo1_results = data.algo1_results;
+    var algo2_results = data.algo2_results;
+    var firstround_results = data.firstround_results;
+    var secondround_results = data.secondround_results;
+
+    // var genderResults = data.genderResult;
+    // var vacationResults = data.vacationResult;
+    console.log(data)
+
+    algo1_results_keys = [...Array(algo1_results.length).keys()];
+    algo1_results_values = Object.values(data.algo1_results);
+
+    algo2_results_keys = [...Array(algo2_results.length).keys()];
+    algo2_results_values = Object.values(data.algo2_results);
+
+    firstround_results_keys = [...Array(firstround_results.length).keys()];
+    firstround_results_values = Object.values(data.firstround_results);
+
+    secondround_results_keys = [...Array(secondround_results.length).keys()];
+    secondround_results_values = Object.values(data.secondround_results);
+
+    updateChart(algo1Chart, algo1_results_keys, algo1_results_values)
+    updateChart(algo2Chart, algo2_results_keys, algo2_results_values)
+    updateChart(round1Chart, firstround_results_keys, firstround_results_values)
+    updateChart(round2Chart, secondround_results_keys, secondround_results_values)
+
+
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+
+    startTime = performance.now()
+
+    updateStatistics();
+  });
+
+</script>
+
+</html>

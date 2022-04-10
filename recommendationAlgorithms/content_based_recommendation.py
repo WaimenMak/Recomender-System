@@ -45,8 +45,8 @@ def get_recommend_content_based_approach(movies: List[Movie], data, genre_list, 
     #Just the whole data is loaded from the ids 
 
     #None of these movies have been scored by the user 
-    rec_movies.loc[:, 'score'] = None
-    results = rec_movies.loc[:, ['movie_id', 'movie_title', 'poster_url', 'score']]
+    rec_movies.loc[:, 'score'] = 0
+    results = rec_movies[["movie_id", "movie_title", "poster_url","score", "explaination"]]
 
     return json.loads(results.to_json(orient="records")) ,  json.loads(user_profile.to_json(orient="records"))
 
@@ -105,6 +105,7 @@ def get_initial_items_content_based_approach(movies:List[Movie], data, genre_lis
     con = sqlConnection.connection
 
     user_preference_df = pd.read_sql_query(f"SELECT * from runtime_u_data WHERE user_id={user_id}", con)    
+    already_recommended_set = set(user_preference_df["movie_id"].values)
 
 
 
@@ -147,14 +148,83 @@ def get_initial_items_content_based_approach(movies:List[Movie], data, genre_lis
     recommendation_table =  cosine_similarity(u_v.T,movies_genre_matrix)
 
 
-    recommendation_table_df = movies_genre_df[['movie_id', 'movie_title', 'poster_url']].copy(deep=True)
+    # recommendation_table_df = movies_genre_df[['movie_id', 'movie_title', 'poster_url']].copy(deep=True)
+    recommendation_table_df = movies_genre_df.copy(deep=True)
     recommendation_table_df['similarity'] = recommendation_table[0]
 
     #Return the top 12 items back 
-    res = recommendation_table_df.sort_values(by=['similarity'], ascending=False)[0:12]
+    res_raw = recommendation_table_df.sort_values(by=['similarity'], ascending=False)
 
+    #Filter all the movies that have already been recommended 
+    res_filtered = res_raw[~res_raw["movie_id"].isin(already_recommended_set)]
+
+    res = res_filtered.iloc[0:18, :]
+
+    res_with_explanation = generateExplanation(res, user_profile_normalized_sql)
     return res, user_profile_normalized_sql
     
+
+def generateExplanation(resultList, user_profile):
+    user_profile_explanation = generateExplanationUserProfile(user_profile)
+    resultList["explaination"] = resultList.apply(lambda row: generateExplanationItem(row, user_profile_explanation), axis=1)
+    return resultList
+
+
+
+def generateExplanationItem(item, user_profile_explanation):
+    retString = f"{user_profile_explanation}\n"
+    similarity = item["similarity"]
+    item = item.drop(["similarity"])
+    genres = list(item[item==1].index)
+    retString = retString + "<br> This item has the genres:&nbsp; <h3>" + ", ".join(genres) + "</h3> <br>"
+    retString = retString + f"Overall a similarty to the user profile of <b> {round(similarity, 3)} </b> is reached <br />"
+
+    return retString
+
+    
+
+    
+
+
+#This function takes the 7 most popular genres -> highlights the genres that are similar 
+def generateExplanationUserProfile(user_profile): 
+    #1. Sort user profile for genres 
+    user_profile = user_profile.drop(columns="user_id")
+    sorted_profile = user_profile.T.sort_values(by=0, ascending=False)
+
+    #Get the top 5 genres
+    sorted_profile = sorted_profile.iloc[0:5, :][0]
+    
+    print(user_profile)
+    user_profile_explanation = "<div><h3>Your Top Preferences </h3> <br>"
+    for genre, genre_score in sorted_profile.items(): 
+        user_profile_explanation = user_profile_explanation + generateBarForGenre(genre, genre_score)
+    print(user_profile_explanation)
+    return user_profile_explanation
+
+
+def generateBarForGenre(genre, genre_score): 
+    value = genre_score* 10 
+    #Round up to the next 0.5 value 
+    value =  round(value * 2) / 2
+
+    retString = ""
+    #This line is just used to evenly space everything
+
+    while value >= 1: 
+        retString = retString + "██"
+        value = value -1 
+    
+    if value != 0: 
+        retString = retString + "█"
+
+    retString = retString + f"&nbsp; {round(genre_score,3)}"
+    retString =retString +  f"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| {genre:} <br>"
+    # retString = retString.replace("", "&nbsp;")
+    return retString
+
+
+
 
 def updateUserProfile(user_profile, user_id):
     """
@@ -256,7 +326,8 @@ def get_similar_items_content_based_approach(itemid, data, genre_list, user_id):
     # item_v = item.to_numpy()
 
 
-    user_item_vector = u_v * item_v
+    # user_item_vector = u_v * item_v
+    user_item_vector =  item_v
 
 
     recommendation_table =  cosine_similarity(user_item_vector, movies_genre_matrix)
@@ -270,7 +341,7 @@ def get_similar_items_content_based_approach(itemid, data, genre_list, user_id):
     #Return the top 12 items back 
     res = recommendation_table_df.sort_values(by=['similarity'], ascending=False)[0:5]
 
-    res.loc[:, 'score'] = None
+    res.loc[:, 'score'] = 0
     results = res.loc[:, ['movie_id', 'movie_title', 'poster_url', 'score']]
     return json.loads(results.to_json(orient="records"))
     
