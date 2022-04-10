@@ -52,7 +52,7 @@ def item2vec(movies, data, model, user_id, init_set, n, round):
     # score = int(sorted(movies, key=lambda i: i['score'], reverse=True)[0]['score'])
 
     # user_add(iid, score)
-    user_add_content_based_approach(movies, user_id, round)
+    user_add_content_based_approach(movies, user_id, round, 2)
     # s = set()
     ls = []
     for movie in movies:
