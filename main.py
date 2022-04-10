@@ -92,7 +92,7 @@ def get_genre():
 #== == == == == == == == == 2. Get Keywords/ Genres for initial selection  
 @app.post("/api/movies")
 def get_movies(firstinput: list):
-
+    global init_set
     keywords = firstinput[0]
 
     global algo_selected 
@@ -122,13 +122,20 @@ def get_movies(firstinput: list):
     movie_TF_IDF_vector = pd.read_json("tfidf_mat.json")
     # s = set()
     for kw in keywords:
-        for item in movie_TF_IDF_vector[movie_TF_IDF_vector[kw]>0.2].movieId:
+        for item in movie_TF_IDF_vector[movie_TF_IDF_vector[kw]>0].movieId:
             init_set.add(item)
-    res = np.random.choice(list(init_set), 18)
+    # try:
+    print(len(init_set))
+    res = np.random.choice(list(init_set), 18, replace=True)
+    print(init_set)
     results = data[data['movie_id'].isin(res)]
+    print(res)
     results.loc[:, 'score'] = 0
-    results = results.sample(18).loc[:, ['movie_id', 'movie_title', 'poster_url', 'score']]
+    results = results.loc[:, ['movie_id', 'movie_title', 'poster_url', 'score']]
     return json.loads(results.to_json(orient="records"))
+    # except:
+    #     print(len(init_set))
+    #     print("not enough data.")
 
 #== == == == == == == == == 3. Get Recommendation
 @app.post("/api/recommend")
@@ -157,7 +164,7 @@ def get_recommend(movies: List[Movie], round: int):
             2. similarity Score:
         
     """     
-
+    round = 1
     #TODO: at the moment the user id is hardcoded -> should be provided by the function call
     
     # Algo choose in backend cannot work before, because the type of this global property is str !
@@ -241,12 +248,19 @@ async def update_recommend(item_id, algorithm: int, round: int ):
 #     return json.loads(results.to_json(orient="records"))
 
 @app.post("/api/refresh")
-def get_movies():
-    res = np.random.choice(list(init_set), 18)
+def get_movies_again(stored_set=init_set):
+    # try:
+    print(stored_set)
+    res = np.random.choice(list(stored_set), 18, replace=True)
+    print(res)
     results = data[data['movie_id'].isin(res)]
     results.loc[:, 'score'] = 0
-    results = results.sample(18).loc[:, ['movie_id', 'movie_title',  'poster_url', 'score']]
+    print(len(results))
+    results = results.loc[:, ['movie_id', 'movie_title',  'poster_url', 'score']]
     return json.loads(results.to_json(orient="records"))
+    # except:
+    #     print(len(stored_set))
+    #     print("not enough data.")
 
 # try to just store the movies which have rated
 

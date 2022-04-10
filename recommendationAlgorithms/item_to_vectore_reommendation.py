@@ -120,7 +120,7 @@ def item2vec_get_items(iid, data, model):
     print(rec_movies)
     rec_movies.loc[:, 'score'] = 0
     rec_movies.loc[:, 'explaination'] = "5 most similar movies"
-    results = rec_movies.loc[:,  ['movie_id', 'movie_title', 'poster_url', "explaination"]]
+    results = rec_movies.loc[:,  ['movie_id', 'movie_title', 'poster_url', "score", "explaination"]]
     return json.loads(results.to_json(orient="records"))
 
 
