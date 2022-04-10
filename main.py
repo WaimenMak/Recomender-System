@@ -42,6 +42,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+round = 0 
 algo_selected = 0
 
 # =======================DATA=========================
@@ -132,7 +133,7 @@ def get_movies(firstinput: list):
 
 #== == == == == == == == == 3. Get Recommendation
 @app.post("/api/recommend")
-def get_recommend(movies: List[Movie], round: int):
+def get_recommend(movies: List[Movie]):
 # def get_recommend(movies: List[Movie], algorithm:int, user_id,round ):
     """
     ### Summary: 
@@ -147,7 +148,6 @@ def get_recommend(movies: List[Movie], round: int):
         user_id: id of the user that made the request 
         round: the recommendation round 
 
-
     Returns:
         - Algorithm 1: 
             1. recommendationList: list with movie recommendations for the user 
@@ -160,6 +160,9 @@ def get_recommend(movies: List[Movie], round: int):
 
     #TODO: at the moment the user id is hardcoded -> should be provided by the function call
     
+    print("now round is",round)
+    print("type======",type(round))
+
     # Algo choose in backend cannot work before, because the type of this global property is str !
     if algo_selected=="1": 
         #Here the content based algorithm is called 
@@ -170,6 +173,13 @@ def get_recommend(movies: List[Movie], round: int):
         recommendations = item2vec(movies, data, model, 944, init_set, 18, round)
 
     return recommendations
+
+
+@app.post("/api/record_round")
+async def get_similar_items(round_fronted:list):
+    global round 
+    round = int(round_fronted[0])
+
 
 #== == == == == == == == == 4. This returns the 5 most simlar items for a given item_id 
 #TODO: rename to : get_similar_items

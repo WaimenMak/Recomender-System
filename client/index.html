@@ -348,33 +348,37 @@
                         // 3.update the user profile in fronted
                         this.user_profile = res.data;
                         // 4. update the seleted movie with user profile
-                        this.selected_movies = this.user_profile
+                        this.selected_movies = this.user_profile;
                         // 5. request the recommend list with updated user profile
                         // Round = 1 
-                        
-                        payload = {"movies": this.selected_movies, "round": 1}
-                        console.log(payload)
-                        axios.post(this.baseurl + "/api/recommend", payload).then((res) => {
-                            this.recommended = res.data;
-                            this.dialog1 = false;
+                        round = [1];
+                        axios.post(this.baseurl + "/api/record_round", round).then((res) => {
+                            // payload = { "movies": this.selected_movies, "round": "1" };
+                            // console.log(payload)
+                            axios.post(this.baseurl + "/api/recommend", this.user_profile).then((res) => {
+                                this.recommended = res.data;
+                                this.dialog1 = false;
+                            });
                         });
                     });
                 },
-
                 // the steps is nearly the same as step2, just updated a new recommend list with the updated user profile
                 update: function () {
                     this.selected_movies = this.selected_movies.concat(this.recommended);
-                    payload = {"movies": this.selected_movies, "round": 2}
-                    console.log(payload)
+                    // payload = { "movies": this.selected_movies, "round": 2 }
+                    // console.log(payload)
                     axios.post(this.baseurl + "/api/profile", this.selected_movies).then((res) => {
                         this.user_profile = res.data;
                         this.selected_movies = this.user_profile;
 
                         // Round 2 
-
-                        axios.post(this.baseurl + "/api/recommend", payload).then((res) => {
-                            this.recommended = res.data;
-                            // this.dialog1 = false;
+                        round = [2]
+                        axios.post(this.baseurl + "/api/record_round", round).then((res) => {
+                            // payload = { "movies": this.selected_movies, "round": "1" };
+                            axios.post(this.baseurl + "/api/recommend", this.user_profile).then((res) => {
+                                this.recommended = res.data;
+                                // this.dialog1 = false;
+                            });
                         });
                     });
                 },
