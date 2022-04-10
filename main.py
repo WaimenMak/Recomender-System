@@ -23,16 +23,16 @@ from utils import item_representation_based_movie_plots
 from database.database_connection import SQLiteConnection
 import sys
 
-import  recommendationAlgorithms.content_based_recommendation as content_based
-from  recommendationAlgorithms.item_to_vectore_reommendation import item2vec, item2vec_get_items
+import recommendationAlgorithms.content_based_recommendation as content_based
+from recommendationAlgorithms.item_to_vectore_reommendation import item2vec, item2vec_get_items
 
 from gensim.models import Word2Vec
 
 import os
 
-## Fast API 
-templates = Jinja2Templates(directory="templates")     
-     
+# Fast API
+templates = Jinja2Templates(directory="templates")
+
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -42,6 +42,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+round = 0
 algo_selected = 0
 
 # =======================DATA=========================
@@ -49,26 +50,28 @@ data = pd.read_csv("data/movie_info_new.csv")
 init_set = set()   # for keywords initial recommendation
 model = Word2Vec.load('movies_embedding.model')
 
-#This is the old genre list
+# This is the old genre list
 # genre_list =["Action", "Adventure", "Animation", "Children", "Comedy", "Crime","Documentary", "Drama", "Fantasy", "Film_Noir", "Horror", "Musical", "Mystery","Romance", "Sci_Fi", "Thriller", "War", "Western"]
 
-#This is the new genre list -> for movie_data_new.csv
-genre_list=['Action','Adventure','Animation','Children','Comedy','Crime','Documentary','Drama','Fantasy','Film-Noir','Horror','IMAX','Musical','Mystery','Romance','Sci-Fi','Thriller','War','Western']
+# This is the new genre list -> for movie_data_new.csv
+genre_list = ['Action', 'Adventure', 'Animation', 'Children', 'Comedy', 'Crime', 'Documentary', 'Drama', 'Fantasy',
+    'Film-Noir', 'Horror', 'IMAX', 'Musical', 'Mystery', 'Romance', 'Sci-Fi', 'Thriller', 'War', 'Western']
 
 """
 =================== Body =============================
 """
 
-#=======================Website===============================
+# =======================Website===============================
+
+
 @app.get("/test", response_class=HTMLResponse)
 async def read_item(request: Request):
-    return templates.TemplateResponse("/client/index.html",{"request": request}) 
+    return templates.TemplateResponse("/client/index.html", {"request": request})
 
 # == == == == == == == == == API == == == == == == == == == == =
 
 
-
-#== == == == == == == == == 1. Get Keywords/ Genres for initial selection  
+# == == == == == == == == == 1. Get Keywords/ Genres for initial selection
 # show four genres
 # @app.get("/api/genre")
 # def get_genre():
@@ -78,6 +81,7 @@ async def read_item(request: Request):
 @app.get("/api/genre")
 def get_genre():
     return {'genre': ["child", "escape", "family", "friend"]}
+
 
 # show all generes
 '''
@@ -89,31 +93,33 @@ def get_genre():
     return{'genre': ['Action','Adventure','Animation','Children','Comedy','Crime','Documentary','Drama','Fantasy','Film-Noir','Horror','IMAX','Musical','Mystery','Romance','Sci-Fi','Thriller','War','Western']}
 '''
 
-#== == == == == == == == == 2. Get Keywords/ Genres for initial selection  
+# == == == == == == == == == 2. Get Keywords/ Genres for initial selection
+
+
 @app.post("/api/movies")
 def get_movies(firstinput: list):
-
+    global init_set
     keywords = firstinput[0]
 
-    global algo_selected 
-    
-    #TODO -> implement user_id increment 
-    # 944 -> 945 -> 946 
-    # Select (max user_id) FROM database 
+    global algo_selected
+
+    # TODO -> implement user_id increment
+    # 944 -> 945 -> 946
+    # Select (max user_id) FROM database
     sqlConnection = SQLiteConnection()
     con = sqlConnection.connection
 
-    max_user = pd.read_sql_query(f"Select max(user_id) as user_id_max FROM runtime_u_data", con)
+    max_user = pd.read_sql_query(
+        f"Select max(user_id) as user_id_max FROM runtime_u_data", con)
 
-    if list(max_user["user_id_max"])[0]: 
+    if list(max_user["user_id_max"])[0]:
         max_user_id = int(max_user["user_id_max"])
-    else: 
+    else:
         max_user_id = 943
 
-    new_user_id = max_user_id + 1 
-    global user 
+    new_user_id = max_user_id + 1
+    global user
     user = new_user_id
-
 
     algo_selected = firstinput[1]
 
@@ -122,85 +128,112 @@ def get_movies(firstinput: list):
     movie_TF_IDF_vector = pd.read_json("tfidf_mat.json")
     # s = set()
     for kw in keywords:
-        for item in movie_TF_IDF_vector[movie_TF_IDF_vector[kw]>0.2].movieId:
+        for item in movie_TF_IDF_vector[movie_TF_IDF_vector[kw]>0].movieId:
             init_set.add(item)
-    res = np.random.choice(list(init_set), 18)
+    # try:
+    print(len(init_set))
+    res = np.random.choice(list(init_set), 18, replace=True)
+    print(init_set)
     results = data[data['movie_id'].isin(res)]
+    print(res)
     results.loc[:, 'score'] = 0
-    results = results.sample(18).loc[:, ['movie_id', 'movie_title', 'poster_url', 'score']]
-    return json.loads(results.to_json(orient="records"))
 
-#== == == == == == == == == 3. Get Recommendation
+    results = results.loc[:, ['movie_id', 'movie_title', 'poster_url', 'score']]
+
+    return json.loads(results.to_json(orient="records"))
+    # except:
+    #     print(len(init_set))
+    #     print("not enough data.")
+
+# == == == == == == == == == 3. Get Recommendation
+
+
 @app.post("/api/recommend")
-def get_recommend(movies: List[Movie], round: int):
+def get_recommend(movies: List[Movie]):
 # def get_recommend(movies: List[Movie], algorithm:int, user_id,round ):
     """
-    ### Summary: 
-    - this function is called each time a new recommendation is made -> as input a set of movies with ratings is provided 
-    - depending on the specified algorithm either Algorithm 1 or Algorithm 2 is chose for the computation of the recommendation 
-        - Algorithm 1: content-based algorithm with cosine similarity 
-        - Algorithm 2: item to factor algorithm 
+    # Summary:
+    - this function is called each time a new recommendation is made -> as input a set of movies with ratings is provided
+    - depending on the specified algorithm either Algorithm 1 or Algorithm 2 is chose for the computation of the recommendation
+        - Algorithm 1: content-based algorithm with cosine similarity
+        - Algorithm 2: item to factor algorithm
 
     Args:
-        movies (List[Movie]): List of movies with ratings 
-        algorithm: Which algorithm should be used to execute the function -> possible values: 0,1 
-        user_id: id of the user that made the request 
-        round: the recommendation round 
-
+        movies (List[Movie]): List of movies with ratings
+        algorithm: Which algorithm should be used to execute the function -> possible values: 0,1
+        user_id: id of the user that made the request
+        round: the recommendation round
 
     Returns:
-        - Algorithm 1: 
-            1. recommendationList: list with movie recommendations for the user 
-            2. userProfile: user profile for the user 
-        - Algorithm 2: 
-            1. recommendationList: list with movie recommendations for the user 
+        - Algorithm 1:
+            1. recommendationList: list with movie recommendations for the user
+            2. userProfile: user profile for the user
+        - Algorithm 2:
+            1. recommendationList: list with movie recommendations for the user
             2. similarity Score:
-        
-    """     
 
-    #TODO: at the moment the user id is hardcoded -> should be provided by the function call
-    
+    """
+
+    # TODO: at the moment the user id is hardcoded -> should be provided by the function call
+
+    print("now round is", round)
+    print("type======", type(round))
+
     # Algo choose in backend cannot work before, because the type of this global property is str !
-    if algo_selected=="1": 
-        #Here the content based algorithm is called 
+    if algo_selected == "1":
+        # Here the content based algorithm is called
         # recommendations, user_profile = content_based.get_recommend_content_based_approach(movies, data, genre_list, user_id, round)
-        recommendations, user_profile = content_based.get_recommend_content_based_approach(movies, data, genre_list, 944, round)
-    else: 
-        #TODO: implement item-to-factor algorithm
-        recommendations = item2vec(movies, data, model, 944, init_set, 18, round)
+        recommendations, user_profile = content_based.get_recommend_content_based_approach(
+            movies, data, genre_list, 944, round)
+    else:
+        # TODO: implement item-to-factor algorithm
+        recommendations = item2vec(
+            movies, data, model, 944, init_set, 18, round)
 
     return recommendations
 
-#== == == == == == == == == 4. This returns the 5 most simlar items for a given item_id 
-#TODO: rename to : get_similar_items
+
+@app.post("/api/record_round")
+async def rec_round(round_fronted:list):
+    global round 
+    round = int(round_fronted[0])
+
+
+# == == == == == == == == == 4. This returns the 5 most simlar items for a given item_id
+# TODO: rename to : get_similar_items
+
+
+# focus
 @app.get("/api/get_similar_items/{item_id}")
 async def get_similar_items(item_id):
     """
-    ### Summary: 
-    - this function is called to retrieve the 5 most similar items 
-    - depending on the specified algorithm either Algorithm 1 or Algorithm 2 is chose for the computation of the recommendation 
-        - Algorithm 1: content-based algorithm with cosine similarity 
-        - Algorithm 2: item to factor algorithm 
+    # Summary:
+    - this function is called to retrieve the 5 most similar items
+    - depending on the specified algorithm either Algorithm 1 or Algorithm 2 is chose for the computation of the recommendation
+        - Algorithm 1: content-based algorithm with cosine similarity
+        - Algorithm 2: item to factor algorithm
 
     Args:
-        item_id: item id for which the 5 most similar items should be retrieved 
-        algorithm: Which algorithm should be used to execute the function -> possible values: 0,1 
-        user_id: id of the user that made the request 
+        item_id: item id for which the 5 most similar items should be retrieved
+        algorithm: Which algorithm should be used to execute the function -> possible values: 0,1
+        user_id: id of the user that made the request
 
 
     Returns:
-        - Algorithm 1: 
-            1. similarityList: 5 most similar items for a given algorithm 
-        - Algorithm 2: 
-            1. similarityList: 5 most similar items for a given algorithm 
-        
-    """     
-    algorithm = 1
-    if algorithm==1: 
-        #Here the content based algorithm is called 
-        result = content_based.get_similar_items_content_based_approach(item_id, data, genre_list, user_id=user)
-    else: 
-        #TODO: implement item-to-factor algorithm
+        - Algorithm 1:
+            1. similarityList: 5 most similar items for a given algorithm
+        - Algorithm 2:
+            1. similarityList: 5 most similar items for a given algorithm
+
+    """
+    if algo_selected == "1":
+        # Here the content based algorithm is called
+        print("algo1--- 1")
+        result = content_based.get_similar_items_content_based_approach(
+            item_id, data, genre_list, user_id=user)
+    else:
+        # TODO: implement item-to-factor algorithm
+        print("algo2=== 1")
         result = item2vec_get_items(item_id, data, model)
         print("result number:",result)
 
@@ -208,13 +241,13 @@ async def get_similar_items(item_id):
 
 
 
-#== == == == == == == == == 5. Update the already rated items 
+# == == == == == == == == == 5. Update the already rated items 
 @app.post("/api/update_recommend/{item_id}")
 async def update_recommend(item_id, algorithm: int, round: int):
     pass
 
 
-#== == == == == == == == == 6. Remove the already rated items 
+# == == == == == == == == == 6. Remove the already rated items 
 @app.delete("/api/delete_recommend/{item_id}")
 async def update_recommend(item_id, algorithm: int, round: int ):
     pass
@@ -223,7 +256,7 @@ async def update_recommend(item_id, algorithm: int, round: int ):
 
 
 
-#TODO: -> Refresh must be changed to the new dataset -> else it will not be working 
+# TODO: -> Refresh must be changed to the new dataset -> else it will not be working 
 # Each refresh: returns just a new list of moview based on the initial keyword selection 
 # Always returns 18 movies
 
@@ -241,12 +274,19 @@ async def update_recommend(item_id, algorithm: int, round: int ):
 #     return json.loads(results.to_json(orient="records"))
 
 @app.post("/api/refresh")
-def get_movies():
-    res = np.random.choice(list(init_set), 18)
-    results = data[data['movie_id'].isin(res)]
-    results.loc[:, 'score'] = 0
-    results = results.sample(18).loc[:, ['movie_id', 'movie_title',  'poster_url', 'score']]
-    return json.loads(results.to_json(orient="records"))
+def get_movies_again(stored_set=init_set):
+    try:
+    # print(stored_set)
+        res = np.random.choice(list(stored_set), 18, replace=True)
+        print(res)
+        results = data[data['movie_id'].isin(res)]
+        results.loc[:, 'score'] = 0
+        print(len(results))
+        results = results.loc[:, ['movie_id', 'movie_title',  'poster_url', 'score']]
+        return json.loads(results.to_json(orient="records"))
+    except:
+        # print(len(stored_set))
+        print("not enough data.")
 
 # try to just store the movies which have rated
 
@@ -269,7 +309,7 @@ def get_profile(movies: List[Movie]):
         rec_movies.score[rec_movies.movie_id == i.movie_id] = i.score
     rec_movies.loc[:, 'rating'] = 0
 
-    #Set the user_id 
+    # Set the user_id 
     rec_movies["user_id"]= user
     rec_movies["algorithm"] = algo_selected
     rec_movies["round"]= 2
@@ -278,7 +318,7 @@ def get_profile(movies: List[Movie]):
                                    'score', 'rating']]
     
 
-    #TODO: Store the data in a database -> here in the end
+    # TODO: Store the data in a database -> here in the end
     update_user_profile_in_database(rec_movies.loc[:,['user_id', 'movie_id', 'score', 'round', 'algorithm']], user)
 
     return json.loads(results.to_json(orient="records"))
@@ -298,7 +338,7 @@ def update_user_profile_in_database(movies: List[Movie], user_id: int):
 
 
     except: 
-        #2. Rollback in case of delete error 
+        # 2. Rollback in case of delete error 
         e = sys.exc_info()[0]
         con.rollback()
         print("Error: The update of the user profile did not work in the database")
@@ -313,10 +353,14 @@ def get_explaination(movies: List[Movie]):
 
     return json.loads(results.to_json(orient="records"))
 
+
 @app.get("/api/guesslike/{movie_id}")
 async def add_recommend(movie_id):
-
-    return None
+    print("here")
+    print("item2vec get similar items")
+    result = item2vec_get_items(movie_id, data, model)
+    print("result", result)
+    return result
     # print(movie_id)
     # res = get_similar_items_like(str(movie_id), n=6)
     # res = [int(i) for i in res]
@@ -326,7 +370,6 @@ async def add_recommend(movie_id):
     #     'movie_id', 'movie_title', 'poster_url', 'like']]
 
     # return json.loads(results.to_json(orient="records"))
-
 
 
 @app.get("/api/ttest")

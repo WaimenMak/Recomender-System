@@ -34,9 +34,9 @@
 
                                 <!-- explanationIndex -->
                                 <!-- Place where show the explanation why recommond the movies -->
-                                <el-popover placement="right" title="It is because you have rated this movie...."
-                                    width="200" trigger="hover" content="这是一段内容,这是一段内容,这是一段内容,这是一段内容。">
-
+                                <el-popover placement="top" title="It was recommended because...." transition="el-zoom-in-center"
+                                    width="450" trigger="hover" content="这是一段内容,这是一段内容,这是一段内容,这是一段内容。">
+                                    
                                     <!-- cannot be changed! it is used to define the hover trigger place-->
                                     <el-image style="width: 100%;height:240px;" :src="o.poster_url" fit="cover"
                                         slot="reference"></el-image>
@@ -44,9 +44,9 @@
 
                                     <!-- You can change and add the explanation below,   -->
                                     <!-- the explanation data be must include in recommended:[] -->
-                                    <el-image style="width: 100%;height:240px;" :src="pic_test" fit="cover"></el-image>
-                                    <h4 style="padding:0 10px;margin:0">{{o.movie_title}}</h4>
-                                    <h6 style="padding:0 10px;margin:0.5em">{{ o.release_date }}</h6>
+                                    <!-- <el-image style="width: 100%;height:240px;" :src="pic_test" fit="cover"></el-image>
+                                    <h4 style="padding:0 10px;margin:0">{{o.movie_title}}</h4> -->
+                                    <h4 style="padding:0 10px;margin:0.5em">{{ o.explaination }}</h6>
 
                                 </el-popover>
 
@@ -164,19 +164,21 @@
             <!-- tab -->
 
             <!-- guess what you like -->
-            <el-drawer title="Guess you may like these movies...." :visible.sync="drawer" direction="btt">
+            <el-drawer title="Guess you may like these movies...." :visible.sync="drawer" style="text-align: center;" direction="btt" size="60%">
 
-                <el-row :gutter="20">
-                    <el-col :span="2">
-                    </el-col>
-                    <el-col :span="4" v-for="o in guess_like" :key="o.movie_id" :offset="0">
-                        <el-image style="width: 100%;height:240px;" :src="o.poster_url" fit="cover"></el-image>
-                        <h4 style="padding:0 10px;margin:0">{{o.movie_title}}</h4>
-                        <h6 style="padding:0 10px;margin:0.5em">{{ o.release_date }}</h6>
-                    </el-col>
-                    <el-col :span="2">
-                    </el-col>
-                </el-row>
+                <div style="text-align: center;">
+                    <el-row :gutter="40">
+                        <el-col :span="2">
+                        </el-col>
+                        <el-col :span="4" v-for="o in guess_like" :key="o.movie_id" :offset="0">
+                            <el-image style="width: 100%;height:240px;" :src="o.poster_url" fit="cover"></el-image>
+                            <h4 style="padding:0 10px;margin:0">{{o.movie_title}}</h4>
+                            <h6 style="padding:0 10px;margin:0.5em">{{ o.release_date }}</h6>
+                        </el-col>
+                        <el-col :span="2">
+                        </el-col>
+                    </el-row>
+                </div>
 
             </el-drawer>
 
@@ -348,33 +350,37 @@
                         // 3.update the user profile in fronted
                         this.user_profile = res.data;
                         // 4. update the seleted movie with user profile
-                        this.selected_movies = this.user_profile
+                        this.selected_movies = this.user_profile;
                         // 5. request the recommend list with updated user profile
                         // Round = 1 
-                        
-                        payload = {"movies": this.selected_movies, "round": 1}
-                        console.log(payload)
-                        axios.post(this.baseurl + "/api/recommend", payload).then((res) => {
-                            this.recommended = res.data;
-                            this.dialog1 = false;
+                        round = [1];
+                        axios.post(this.baseurl + "/api/record_round", round).then((res) => {
+                            // payload = { "movies": this.selected_movies, "round": "1" };
+                            // console.log(payload)
+                            axios.post(this.baseurl + "/api/recommend", this.user_profile).then((res) => {
+                                this.recommended = res.data;
+                                this.dialog1 = false;
+                            });
                         });
                     });
                 },
-
                 // the steps is nearly the same as step2, just updated a new recommend list with the updated user profile
                 update: function () {
                     this.selected_movies = this.selected_movies.concat(this.recommended);
-                    payload = {"movies": this.selected_movies, "round": 2}
-                    console.log(payload)
+                    // payload = { "movies": this.selected_movies, "round": 2 }
+                    // console.log(payload)
                     axios.post(this.baseurl + "/api/profile", this.selected_movies).then((res) => {
                         this.user_profile = res.data;
                         this.selected_movies = this.user_profile;
 
                         // Round 2 
-
-                        axios.post(this.baseurl + "/api/recommend", payload).then((res) => {
-                            this.recommended = res.data;
-                            // this.dialog1 = false;
+                        round = [2]
+                        axios.post(this.baseurl + "/api/record_round", round).then((res) => {
+                            // payload = { "movies": this.selected_movies, "round": "1" };
+                            axios.post(this.baseurl + "/api/recommend", this.user_profile).then((res) => {
+                                this.recommended = res.data;
+                                // this.dialog1 = false;
+                            });
                         });
                     });
                 },
@@ -407,7 +413,7 @@
                 // output: the most n similar movies with the target movie
                 // the data display in the drawer will be updated, then drawer will appear
                 guess_U_like: function (movie) {
-                    axios.get(this.baseurl + '/api/guesslike/' + movie.movie_id).then((res) => {
+                    axios.get(this.baseurl + '/api/get_similar_items/' + movie.movie_id).then((res) => {
                         this.guess_like = res.data;
                         this.drawer = true;
                     })
