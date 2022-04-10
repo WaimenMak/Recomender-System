@@ -34,7 +34,7 @@ def store_result(store_list, mid, title, exp, poster, origin):
   entry = {
       "movie_id": int(mid),
       "movie_title": title,
-      "score": None,
+      "score": 0,
       "poster_url": poster,
       "explaination": exp,
       "origin": origin
@@ -111,8 +111,10 @@ def finetune_model(movies, model):
     for movie in movies:
         if movie.score >= 4:
             interested.append(str(movie.movie_id))
+            print("interest")
         else:
             not_interested.append(str(movie.movie_id))
+            print("not interest")
     if len(interested) > 0 or len(not_interested) > 0:
         new_sentense = [interested, not_interested]
         model.train(new_sentense, total_examples=model.corpus_count, epochs=model.epochs)
