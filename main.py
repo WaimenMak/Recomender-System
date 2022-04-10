@@ -132,7 +132,7 @@ def get_movies(firstinput: list):
 
 #== == == == == == == == == 3. Get Recommendation
 @app.post("/api/recommend")
-def get_recommend(movies: List[Movie]):
+def get_recommend(movies: List[Movie], round: int):
 # def get_recommend(movies: List[Movie], algorithm:int, user_id,round ):
     """
     ### Summary: 
@@ -160,13 +160,14 @@ def get_recommend(movies: List[Movie]):
 
     #TODO: at the moment the user id is hardcoded -> should be provided by the function call
     
-    if algo_selected==1: 
+    # Algo choose in backend cannot work before, because the type of this global property is str !
+    if algo_selected=="1": 
         #Here the content based algorithm is called 
         # recommendations, user_profile = content_based.get_recommend_content_based_approach(movies, data, genre_list, user_id, round)
-        recommendations, user_profile = content_based.get_recommend_content_based_approach(movies, data, genre_list, 944, 1)
+        recommendations, user_profile = content_based.get_recommend_content_based_approach(movies, data, genre_list, 944, round)
     else: 
         #TODO: implement item-to-factor algorithm
-        recommendations = item2vec(movies, data, model, 944, init_set, 18, 1)
+        recommendations = item2vec(movies, data, model, 944, init_set, 18, round)
 
     return recommendations
 
@@ -325,3 +326,37 @@ async def add_recommend(movie_id):
     #     'movie_id', 'movie_title', 'poster_url', 'like']]
 
     # return json.loads(results.to_json(orient="records"))
+
+
+
+@app.get("/api/ttest")
+async def get_ttest(): 
+    pass 
+    # 1. Reads the data from the database 
+    # 
+    # sqlConnection = SQLiteConnection()
+    # con = sqlConnection.connection
+
+    # user_preference_df = pd.read_sql_query(f"SELECT * from runtime_u_data", con)    
+
+    # 2. Calculate t-Test with the data 
+    #    2.1 Algo 1 vs. Algo 2 
+    #    2.2. First Round vs Second Round 
+
+
+    # 3. For the visualisation of the result: -> 4 Charts are being displayed ->
+    # Return Object should look like this: 
+    # alg_comparision_algo1: [7.4 ; 4.5; 9.5 ...]
+    # alg_comparision_algo2: [7.4 ; 2.5; 5.5 ...]
+    # first_round_avg: [4.2, 5.0, ...]
+    # second_round_avg: [4.2, 5.0, ...]
+    # ttest_within_algo: 0.05
+    # ttest_within_round: 0.07
+
+    # Each List in the above object: e.g  [7.4 ; 4.5; 9.5 ...] -> stores all the average ratings of the recommendations for each user 
+    
+    
+
+
+
+    #
