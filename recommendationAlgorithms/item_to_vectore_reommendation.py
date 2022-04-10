@@ -36,7 +36,7 @@ def store_result(store_list, mid, title, exp, poster, origin):
       "movie_title": title,
       "score": None,
       "poster_url": poster,
-      "explaination": exp
+      "explaination": exp,
       "origin": origin
   }
   store_list.append(entry)
@@ -123,6 +123,7 @@ def item2vec_get_items(iid, data, model):
     rec_movies = data.loc[data['movie_id'].isin(res)]
     print(rec_movies)
     rec_movies.loc[:, 'score'] = 0
+
     rec_movies.loc[:, 'origin'] = data.loc[data['movie_id']==iid,'poster_url']
     rec_movies.loc[:, 'explaination'] = "5 most similar movies"
     results = rec_movies.loc[:,  ['movie_id', 'movie_title', 'poster_url', "score", "explaination", "origin"]]
