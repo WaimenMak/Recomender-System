@@ -118,9 +118,9 @@ def item2vec_get_items(iid, data, model):
     res = [int(item[0]) for item in res]
     rec_movies = data.loc[data['movie_id'].isin(res)]
     print(rec_movies)
-    rec_movies.loc[:, 'like'] = None
+    rec_movies.loc[:, 'score'] = 0
     rec_movies.loc[:, 'explaination'] = "5 most similar movies"
-    results = rec_movies.loc[:, ['movie_id', 'movie_title', 'like', "explaination"]]
+    results = rec_movies.loc[:, ['movie_id', 'movie_title', 'poster_url',  "explaination"]]
     return json.loads(results.to_json(orient="records"))
 
 
