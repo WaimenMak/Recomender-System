@@ -160,7 +160,8 @@ def get_recommend(movies: List[Movie]):
 
     #TODO: at the moment the user id is hardcoded -> should be provided by the function call
     
-    if algo_selected==1: 
+    # Algo choose in backend cannot work before, because the type of this global property is str !
+    if algo_selected=="1": 
         #Here the content based algorithm is called 
         # recommendations, user_profile = content_based.get_recommend_content_based_approach(movies, data, genre_list, user_id, round)
         recommendations, user_profile = content_based.get_recommend_content_based_approach(movies, data, genre_list, 944, 1)
