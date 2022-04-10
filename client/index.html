@@ -34,9 +34,10 @@
 
                                 <!-- explanationIndex -->
                                 <!-- Place where show the explanation why recommond the movies -->
-                                <el-popover placement="top" title="It was recommended because...." transition="el-zoom-in-center"
-                                    width="450" trigger="hover" content="这是一段内容,这是一段内容,这是一段内容,这是一段内容。">
-                                    
+                                <el-popover placement="top" title="It was recommended because...."
+                                    transition="el-zoom-in-center" width="450" trigger="hover"
+                                    content="这是一段内容,这是一段内容,这是一段内容,这是一段内容。">
+
                                     <!-- cannot be changed! it is used to define the hover trigger place-->
                                     <el-image style="width: 100%;height:240px;" :src="o.poster_url" fit="cover"
                                         slot="reference"></el-image>
@@ -46,13 +47,22 @@
                                     <!-- the explanation data be must include in recommended:[] -->
                                     <!-- <el-image style="width: 100%;height:240px;" :src="pic_test" fit="cover"></el-image>
                                     <h4 style="padding:0 10px;margin:0">{{o.movie_title}}</h4> -->
-                                    <h4 style="padding:0 10px;margin:0.5em">{{ o.explaination }}</h6>
+
+                                    <el-container>
+                                        <el-aside width="200px">
+                                            <el-image style="width: 190px;height:100%;" :src="o.origin" fit="cover">
+                                            </el-image>
+                                        </el-aside>
+                                        <el-main>
+                                            <h4 style="padding:0 10px;margin:0.5em">{{ o.explaination }}</h6>
+                                        </el-main>
+                                    </el-container>
+
 
                                 </el-popover>
 
                                 <h4 style="padding:0 10px;margin:0">{{o.movie_title}}</h4>
                                 <h6 style="padding:0 10px;margin:0.5em">{{ o.release_date }}</h6>
-
 
 
                                 <div plain style="position:absolute;bottom:5px;">
@@ -70,8 +80,6 @@
 
                                 </div>
 
-
-
                             </el-card>
 
                         </el-col>
@@ -86,6 +94,7 @@
                         </el-button>
                     </div>
 
+                    
                 </el-tab-pane>
 
                 <!-- userProfile -->
@@ -139,14 +148,15 @@
                 </el-tab-pane>
 
                 <!-- Debug area -->
+
+                <!-- == == == == == ==== == ==== == ==== == ==== == ==== == ==== == ==-->
+
+                <!-- You can see what your data(only defined in vue) look like just change the data property -->
+                <!-- You can see the columns and rows realtime-->
+                <!-- The columns(prop) is required -->
+<!-- 
                 <el-tab-pane label="DataTestArea" name="third">
-
-                    <!-- == == == == == ==== == ==== == ==== == ==== == ==== == ==== == ==-->
-
-                    <!-- You can see what your data(only defined in vue) look like just change the data property -->
-                    <!-- You can see the columns and rows realtime-->
-                    <!-- The columns(prop) is required -->
-                    <el-table :data="recommended" style="width: 100%">
+                    <el-table :data="selected_movies" style="width: 100%">
                         <el-table-column prop="movie_id" label="movie_id" width="180">
                         </el-table-column>
                         <el-table-column prop="movie_title" label="movie_title" width="180">
@@ -156,15 +166,16 @@
                         <el-table-column prop="score" label="score">
                         </el-table-column>
                     </el-table>
+                </el-tab-pane> -->
 
-                    <!-- == == == == == ==== == ==== == ==== == ==== == ==== == ==== == ==-->
-                </el-tab-pane>
+                <!-- == == == == == ==== == ==== == ==== == ==== == ==== == ==== == ==-->
 
             </el-tabs>
             <!-- tab -->
 
             <!-- guess what you like -->
-            <el-drawer title="Guess you may like these movies...." :visible.sync="drawer" style="text-align: center;" direction="btt" size="60%">
+            <el-drawer title="Guess you may like these movies...." :visible.sync="drawer" style="text-align: center;"
+                direction="btt" size="60%">
 
                 <div style="text-align: center;">
                     <el-row :gutter="40">
