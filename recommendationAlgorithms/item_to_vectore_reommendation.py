@@ -49,6 +49,7 @@ def item2vec(movies, data, model, user_id, init_set, n, round):
     if round > 1:
         print("now next round")
         finetune_model(movies, model)
+        print("out")
 
     # iid = str(sorted(movies, key=lambda i: i['score'], reverse=True)[0]['movieId'])
     # score = int(sorted(movies, key=lambda i: i['score'], reverse=True)[0]['score'])
@@ -57,21 +58,25 @@ def item2vec(movies, data, model, user_id, init_set, n, round):
     user_add_content_based_approach(movies, user_id, round, 2)
     # s = set()
     ls = []
+    not_interest = []
     for movie in movies:
       # if movie.score >= 4:
+        not_interest.append(movie.movie_id)
         if movie.score >= 4:
         # sim = model.most_similar([str(movie.movieId)], topn=10)
             print(str(movie.movie_id))
-            sim = model.wv.most_similar([str(movie.movie_id)], topn=10)
+            sim = model.wv.most_similar([str(movie.movie_id)], topn=20)
             for item in sim:
                 # print(item[0])
+                if int(item[0]) in not_interest:
+                    continue
                 if len(data[data["movie_id"] == int(item[0])]) > 0:
-                  title = data.loc[data['movie_id']==int(item[0]),'movie_title'].values[0]
-                  exp = f"Your interested movie: {movie.movie_title} has {item[1]:.2f} similarity to movie: {title}"
-                  poster = data.loc[data['movie_id']==int(item[0]),'poster_url']
-                  origin = data.loc[data['movie_id']==movie.movie_id,'poster_url']
+                    title = data.loc[data['movie_id']==int(item[0]),'movie_title'].values[0]
+                    exp = f"Your interested movie: {movie.movie_title} has {item[1]:.2f} similarity to movie: {title}"
+                    poster = data.loc[data['movie_id']==int(item[0]),'poster_url']
+                    origin = data.loc[data['movie_id']==movie.movie_id,'poster_url']
                   # s.add(item[0])
-                  store_result(ls, item[0], title, exp, poster, origin)
+                    store_result(ls, item[0], title, exp, poster, origin)
                   # recommendation = temp.loc[temp['movieId']==item[0]]
     m = len(ls)
     print(m)
@@ -80,11 +85,11 @@ def item2vec(movies, data, model, user_id, init_set, n, round):
         # res = np.random.choice(list(s), n)
         res = random.sample(ls, n)
         results = pd.DataFrame(res)
-        print(results)
+        print("res1")
         return json.loads(results.to_json(orient="records"))
     elif m < n and m > 0:
         results = pd.DataFrame(ls)
-        print(results)
+        print("res2")
         return json.loads(results.to_json(orient="records"))
     elif m == 0:
         res = np.random.choice(list(init_set), n)
