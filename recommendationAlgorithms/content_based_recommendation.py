@@ -127,7 +127,7 @@ def get_initial_items_content_based_approach(movies:List[Movie], data, genre_lis
     movies_genre_matrix = movies_genre_df[genre_list].fillna(0).to_numpy()
 
 
-    rating_weight = user_preference_df_filtered.rating / user_preference_df_filtered.rating.sum()
+    rating_weight = user_preference_df_filtered.score / user_preference_df_filtered.score.sum()
     user_profile = user_movie_df.T.dot(rating_weight.values.reshape(rating_weight.shape[0],1))
 
     user_profile_normalized = user_profile / sum(user_profile.values)

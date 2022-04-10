@@ -20,6 +20,8 @@ from surprise import KNNBasic
 from surprise import Dataset
 from entities.Movie import Movie
 from utils import item_representation_based_movie_plots
+from database.database_connection import SQLiteConnection
+import sys
 
 import  recommendationAlgorithms.content_based_recommendation as content_based
 from  recommendationAlgorithms.item_to_vectore_reommendation import item2vec, item2vec_get_items
@@ -98,7 +100,19 @@ def get_movies(firstinput: list):
     #TODO -> implement user_id increment 
     # 944 -> 945 -> 946 
     # Select (max user_id) FROM database 
+    sqlConnection = SQLiteConnection()
+    con = sqlConnection.connection
 
+    max_user = pd.read_sql_query(f"Select max(user_id) as user_id_max FROM runtime_u_data", con)
+
+    if list(max_user["user_id_max"])[0]: 
+        max_user_id = int(max_user["user_id_max"])
+    else: 
+        max_user_id = 943
+
+    new_user_id = max_user_id + 1 
+    global user 
+    user = new_user_id
 
 
     algo_selected = firstinput[1]
@@ -159,7 +173,7 @@ def get_recommend(movies: List[Movie]):
 #== == == == == == == == == 4. This returns the 5 most simlar items for a given item_id 
 #TODO: rename to : get_similar_items
 @app.get("/api/get_similar_items/{item_id}")
-async def get_similar_items(item_id,algorithm, user_id):
+async def get_similar_items(item_id):
     """
     ### Summary: 
     - this function is called to retrieve the 5 most similar items 
@@ -183,7 +197,7 @@ async def get_similar_items(item_id,algorithm, user_id):
     algorithm = 1
     if algorithm==1: 
         #Here the content based algorithm is called 
-        result = content_based.get_similar_items_content_based_approach(item_id, data, genre_list, user_id=944)
+        result = content_based.get_similar_items_content_based_approach(item_id, data, genre_list, user_id=user)
     else: 
         #TODO: implement item-to-factor algorithm
         result = item2vec_get_items(item_id, data, model)
@@ -253,13 +267,40 @@ def get_profile(movies: List[Movie]):
     for i in movie_stored:
         rec_movies.score[rec_movies.movie_id == i.movie_id] = i.score
     rec_movies.loc[:, 'rating'] = 0
+
+    #Set the user_id 
+    rec_movies["user_id"]= user
+    rec_movies["algorithm"] = algo_selected
+    rec_movies["round"]= 2
+    
     results = rec_movies.loc[:, ['movie_id', 'movie_title',
                                    'score', 'rating']]
     
+
     #TODO: Store the data in a database -> here in the end
+    update_user_profile_in_database(rec_movies.loc[:,['user_id', 'movie_id', 'score', 'round', 'algorithm']], user)
 
     return json.loads(results.to_json(orient="records"))
 
+
+def update_user_profile_in_database(movies: List[Movie], user_id: int): 
+    # 1. Buld delete everything from the old connection 
+    sqlConnection = SQLiteConnection()
+    con = sqlConnection.connection
+    try: 
+        sql = f'DELETE FROM runtime_u_data WHERE user_id={user_id}'
+        cur = con.cursor()
+        cur.execute(sql)
+
+        movies.to_sql(name='runtime_u_data',con=con, if_exists='append', index=False)
+        con.commit()
+
+
+    except: 
+        #2. Rollback in case of delete error 
+        e = sys.exc_info()[0]
+        con.rollback()
+        print("Error: The update of the user profile did not work in the database")
 
 @app.post("/api/explain")
 def get_explaination(movies: List[Movie]):

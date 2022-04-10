@@ -46,7 +46,7 @@ movie_poster = """  CREATE TABLE IF NOT EXISTS movie_poster (
 runtime_u_data = """  CREATE TABLE IF NOT EXISTS runtime_u_data (
                                         user_id integer,
                                         movie_id integer NOT NULL, 
-                                        rating integer, 
+                                        score integer, 
                                         round integer, 
                                         algorithm integer, 
                                         FOREIGN KEY(movie_id) REFERENCES projects (id))
@@ -57,7 +57,7 @@ runtime_u_data = """  CREATE TABLE IF NOT EXISTS runtime_u_data (
 u_data = """  CREATE TABLE IF NOT EXISTS u_data (
                                         user_id integer,
                                         movie_id integer NOT NULL, 
-                                        rating integer, 
+                                        score integer, 
                                         timestamp integer,
                                         FOREIGN KEY(movie_id) REFERENCES projects (id)
 """
