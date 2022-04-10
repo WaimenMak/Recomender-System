@@ -30,13 +30,14 @@ def user_add(iid, score):
         for k in data_input:
             wf.writerow(k)
 
-def store_result(store_list, mid, title, exp, poster):
+def store_result(store_list, mid, title, exp, poster, origin):
   entry = {
       "movie_id": int(mid),
       "movie_title": title,
       "score": None,
       "poster_url": poster,
       "explaination": exp
+      "origin": origin
   }
   store_list.append(entry)
   return store_list
@@ -68,8 +69,9 @@ def item2vec(movies, data, model, user_id, init_set, n, round):
                   title = data.loc[data['movie_id']==int(item[0]),'movie_title'].values[0]
                   exp = f"Your interested movie: {movie.movie_title} has {item[1]:.2f} similarity to movie: {title}"
                   poster = data.loc[data['movie_id']==int(item[0]),'poster_url']
+                  origin = data.loc[data['movie_id']==movie.movie_id,'poster_url']
                   # s.add(item[0])
-                  store_result(ls, item[0], title, exp, poster)
+                  store_result(ls, item[0], title, exp, poster, origin)
                   # recommendation = temp.loc[temp['movieId']==item[0]]
     m = len(ls)
     print(m)
@@ -90,8 +92,9 @@ def item2vec(movies, data, model, user_id, init_set, n, round):
         rec_movies = data.loc[data['movie_id'].isin(res)]
         # print(rec_movies)
         rec_movies.loc[:, 'score'] = 0
+        rec_movies.loc[:, 'origin'] = None
         rec_movies.loc[:, 'explaination'] = "Choosen from your keywords"
-        results = rec_movies.loc[:, ['movie_id', 'movie_title', 'poster_url', "explaination"]]
+        results = rec_movies.loc[:, ['movie_id', 'movie_title', 'poster_url', "explaination", "origin"]]
         return json.loads(results.to_json(orient="records"))
 
 def finetune_model(movies, model):
@@ -120,8 +123,9 @@ def item2vec_get_items(iid, data, model):
     rec_movies = data.loc[data['movie_id'].isin(res)]
     print(rec_movies)
     rec_movies.loc[:, 'score'] = 0
+    rec_movies.loc[:, 'origin'] = data.loc[data['movie_id']==iid,'poster_url']
     rec_movies.loc[:, 'explaination'] = "5 most similar movies"
-    results = rec_movies.loc[:,  ['movie_id', 'movie_title', 'poster_url', "score", "explaination"]]
+    results = rec_movies.loc[:,  ['movie_id', 'movie_title', 'poster_url', "score", "explaination", "origin"]]
     return json.loads(results.to_json(orient="records"))
 
 
