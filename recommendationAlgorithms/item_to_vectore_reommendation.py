@@ -46,6 +46,7 @@ def item2vec(movies, data, model, user_id, init_set, n, round):
     # iid = str(sorted(movies, key=lambda i: i.score, reverse=True)[0].movie_id)
     # score = int(sorted(movies, key=lambda i: i.score, reverse=True)[0].score)
     if round > 1:
+        print("now next round")
         finetune_model(movies, model)
 
     # iid = str(sorted(movies, key=lambda i: i['score'], reverse=True)[0]['movieId'])

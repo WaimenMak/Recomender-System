@@ -183,7 +183,7 @@ def get_recommend(movies: List[Movie]):
 
 
 @app.post("/api/record_round")
-async def get_similar_items(round_fronted:list):
+async def rec_round(round_fronted:list):
     global round 
     round = int(round_fronted[0])
 
@@ -212,12 +212,13 @@ async def get_similar_items(item_id):
             1. similarityList: 5 most similar items for a given algorithm 
         
     """     
-    algorithm = 1
+    algorithm = 2
     if algorithm==1: 
         #Here the content based algorithm is called 
         result = content_based.get_similar_items_content_based_approach(item_id, data, genre_list, user_id=user)
     else: 
         #TODO: implement item-to-factor algorithm
+        print("item2vec get similar items")
         result = item2vec_get_items(item_id, data, model)
         print("result number:",result)
 
@@ -259,18 +260,18 @@ async def update_recommend(item_id, algorithm: int, round: int ):
 
 @app.post("/api/refresh")
 def get_movies_again(stored_set=init_set):
-    # try:
-    print(stored_set)
-    res = np.random.choice(list(stored_set), 18, replace=True)
-    print(res)
-    results = data[data['movie_id'].isin(res)]
-    results.loc[:, 'score'] = 0
-    print(len(results))
-    results = results.loc[:, ['movie_id', 'movie_title',  'poster_url', 'score']]
-    return json.loads(results.to_json(orient="records"))
-    # except:
-    #     print(len(stored_set))
-    #     print("not enough data.")
+    try:
+    # print(stored_set)
+        res = np.random.choice(list(stored_set), 18, replace=True)
+        print(res)
+        results = data[data['movie_id'].isin(res)]
+        results.loc[:, 'score'] = 0
+        print(len(results))
+        results = results.loc[:, ['movie_id', 'movie_title',  'poster_url', 'score']]
+        return json.loads(results.to_json(orient="records"))
+    except:
+        # print(len(stored_set))
+        print("not enough data.")
 
 # try to just store the movies which have rated
 
@@ -339,8 +340,11 @@ def get_explaination(movies: List[Movie]):
 
 @app.get("/api/guesslike/{movie_id}")
 async def add_recommend(movie_id):
-
-    return None
+    print("here")
+    print("item2vec get similar items")
+    result = item2vec_get_items(movie_id, data, model)
+    print("result", result)
+    return result
     # print(movie_id)
     # res = get_similar_items_like(str(movie_id), n=6)
     # res = [int(i) for i in res]
