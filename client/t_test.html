@@ -407,19 +407,45 @@
             <div class="tile is-child box">
               <canvas id="round2Chart"></canvas>
             </div>
-            <div class="tile is-child box">
-              <div>TODO: Display the Results of the t-test</div>
-              <tabl>
-
-                <tr> <td>Test 1 </td> </tr>
-                <tr> <td>Test 2 1 </td> </tr>
-
-              </tabl>
-            </div>
           </div>
+        </div>
+    </section>
+    <section>
+
+      <div class="container">
+
+        <div class="box is-centered">
+          <table class="table is-bordered">
+            <thead> 
+              <th>Type</th>
+              <th>Result</th>
+            </thead>
+            <tbody> 
+              <tr> 
+                <td>T-Test: Within Algorithm - Statistik </td>
+                <td id="within_algo_statistic"></td>
+              </tr>
+              <tr> 
+                <td>T-Test: Within Algorithm - P-Value </td>
+                <td id="within_algo_p_value"></td>
+              </tr>
+              <tr> 
+                <td>T-Test: Within Rounds - Statistik </td>
+                <td id="within_rounds_statistik"></td>
+              </tr>
+              <tr> 
+                <td>T-Test: Within Rounds - P-Value </td>
+                <td id="within_rounds_p_value"></td>
+              </tr>
+            </tbody>
+            
+          
+          </table>
+
         </div>
       </div>
     </section>
+    </div>
 </body>
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script>
@@ -440,46 +466,51 @@
   }
 
   var data;
- async function updateStatistics() {
+  async function updateStatistics() {
     var response = axios.get("http://127.0.0.1:8000/api/ttest").then((res) => {
-      this.data =  res.data;
+      this.data = res.data;
 
 
-      
-      
-
-    var algo1_results =  data.algo1_results;
-    var algo2_results =  data.algo2_results;
-    var firstround_results = data.firstround_results;
-    var secondround_results = data.secondround_results;
 
 
-    // Display this data on the website 
-    var t_test_within_algo_statistic = data.t_test_within_algo_statistic
-    var t_test_within_algo_p_value = data.t_test_within_algo_p_value
-    var t_test_within_rounds_statistic = data.t_test_within_rounds_statistic
-    var t_test_within_rounds_p_values = data.t_test_within_rounds_p_values
 
-    // var genderResults = data.genderResult;
-    // var vacationResults = data.vacationResult;
-    console.log(data)
+      var algo1_results = data.algo1_results;
+      var algo2_results = data.algo2_results;
+      var firstround_results = data.firstround_results;
+      var secondround_results = data.secondround_results;
 
-    algo1_results_keys = [...Array(algo1_results.length).keys()];
-    algo1_results_values = Object.values(data.algo1_results);
 
-    algo2_results_keys = [...Array(algo2_results.length).keys()];
-    algo2_results_values = Object.values(data.algo2_results);
+      // Display this data on the website 
+      var t_test_within_algo_statistic = data.t_test_within_algo_statistic
+      var t_test_within_algo_p_value = data.t_test_within_algo_p_value
+      var t_test_within_rounds_statistic = data.t_test_within_rounds_statistic
+      var t_test_within_rounds_p_value = data.t_test_within_rounds_p_value
 
-    firstround_results_keys = [...Array(firstround_results.length).keys()];
-    firstround_results_values = Object.values(data.firstround_results);
 
-    secondround_results_keys = [...Array(secondround_results.length).keys()];
-    secondround_results_values = Object.values(data.secondround_results);
+      document.getElementById("within_algo_statistic").innerHTML = t_test_within_algo_statistic; 
+      document.getElementById("within_algo_p_value").innerHTML = t_test_within_algo_p_value; 
+      document.getElementById("within_rounds_statistik").innerHTML = t_test_within_rounds_statistic; 
+      document.getElementById("within_rounds_p_value").innerHTML = t_test_within_rounds_p_value; 
+      // var genderResults = data.genderResult;
+      // var vacationResults = data.vacationResult;
+      console.log(data)
 
-    updateChart(algo1Chart, algo1_results_keys, algo1_results_values)
-    updateChart(algo2Chart, algo2_results_keys, algo2_results_values)
-    updateChart(round1Chart, firstround_results_keys, firstround_results_values)
-    updateChart(round2Chart, secondround_results_keys, secondround_results_values)
+      algo1_results_keys = [...Array(algo1_results.length).keys()];
+      algo1_results_values = Object.values(data.algo1_results);
+
+      algo2_results_keys = [...Array(algo2_results.length).keys()];
+      algo2_results_values = Object.values(data.algo2_results);
+
+      firstround_results_keys = [...Array(firstround_results.length).keys()];
+      firstround_results_values = Object.values(data.firstround_results);
+
+      secondround_results_keys = [...Array(secondround_results.length).keys()];
+      secondround_results_values = Object.values(data.secondround_results);
+
+      updateChart(algo1Chart, algo1_results_keys, algo1_results_values)
+      updateChart(algo2Chart, algo2_results_keys, algo2_results_values)
+      updateChart(round1Chart, firstround_results_keys, firstround_results_values)
+      updateChart(round2Chart, secondround_results_keys, secondround_results_values)
 
     });
 
