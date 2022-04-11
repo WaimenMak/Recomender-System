@@ -137,7 +137,7 @@ def get_movies(firstinput: list):
             init_set.add(item)
     # try:
     print(len(init_set))
-    res = np.random.choice(list(init_set), 18, replace=True)
+    res = np.random.choice(list(init_set), 18, replace=False)
     print(init_set)
     results = data[data['movie_id'].isin(res)]
     print(res)
@@ -306,7 +306,7 @@ def get_profile(movies: List[Movie]):
     rec_movies["algorithm"] = algo_selected
     rec_movies["round"]= 2
     
-    results = rec_movies.loc[:, ['movie_id', 'movie_title',
+    results = rec_movies.loc[:, ['movie_id', 'movie_title',  'poster_url',
                                    'score', 'rating']]
     
 
