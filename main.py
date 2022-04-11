@@ -154,6 +154,29 @@ def get_movies(firstinput: list):
 # == == == == == == == == == 3. Get Recommendation
 
 
+# This function is trying to fix the problem of duplicated data in content-based method.
+def get_right_data(movies: list):
+    movie_stored = []
+    for movie in movies:
+        if movie.score > 0:
+            movie_stored.append(movie)
+
+    restest = [int(movie.movie_id) for movie in movie_stored]
+    rec_movies = data.loc[data['movie_id'].isin(restest)]
+
+    if 'score' not in rec_movies.columns:
+        rec_movies.loc[:, 'score'] = 0
+
+    for i in movie_stored:
+        rec_movies.score[rec_movies.movie_id == i.movie_id] = i.score
+
+    rec_movies["user_id"] = user
+    rec_movies["algorithm"] = algo_selected
+    rec_movies["round"] = round
+
+    return rec_movies
+
+
 @app.post("/api/recommend")
 def get_recommend(movies: List[Movie]):
     # def get_recommend(movies: List[Movie], algorithm:int, user_id,round ):
@@ -182,12 +205,9 @@ def get_recommend(movies: List[Movie]):
 
     # TODO: at the moment the user id is hardcoded -> should be provided by the function call
 
-    rec_movies = pd.DataFrame(movies)
+    rec_movies = get_right_data(movies)
 
-    rec_movies["user_id"]= user
-    rec_movies["algorithm"] = algo_selected
-    rec_movies["round"]= round
-
+    # move the part of storing user info from api/profile to here
     update_user_profile_in_database(
         rec_movies.loc[:, ['user_id', 'movie_id', 'score', 'round', 'algorithm']], user)
 
