@@ -99,7 +99,7 @@
                         </el-button>
                     </div>
 
-                    
+
                 </el-tab-pane>
 
                 <!-- userProfile -->
@@ -159,7 +159,7 @@
                 <!-- You can see what your data(only defined in vue) look like just change the data property -->
                 <!-- You can see the columns and rows realtime-->
                 <!-- The columns(prop) is required -->
-<!-- 
+                <!-- 
                 <el-tab-pane label="DataTestArea" name="third">
                     <el-table :data="selected_movies" style="width: 100%">
                         <el-table-column prop="movie_id" label="movie_id" width="180">
@@ -190,6 +190,9 @@
                             <el-image style="width: 100%;height:240px;" :src="o.poster_url" fit="cover"></el-image>
                             <h4 style="padding:0 10px;margin:0">{{o.movie_title}}</h4>
                             <h6 style="padding:0 10px;margin:0.5em">{{ o.release_date }}</h6>
+                            <!-- focus -->
+                            <el-rate style="padding:10px 10px;" v-model="o.score" :colors="colors">
+                            </el-rate>
                         </el-col>
                         <el-col :span="2">
                         </el-col>
@@ -198,7 +201,6 @@
 
             </el-drawer>
 
-            <!-- focus -->
             <!--  Dialog0-->
             <el-dialog title="Please choose any genre you're interested in." :visible="dialog0" width="60%"
                 :show-close="false">
@@ -258,9 +260,8 @@
             </el-dialog>
         </el-main>
 
-
     </el-container>
-    
+
 </div>
 
 <body>
@@ -307,7 +308,7 @@
                     // when click the similar movies button, the most 5 familiar movies 
                     // with that movie will stored in here.
                     guess_like: [],
-                    isItemToItem: true, 
+                    isItemToItem: true,
 
                     colors: ['#99A9BF', '#F7BA2A', '#FF9900'],
                     // textRate:['good', 'bad', 'good', 'a', 'b'],
@@ -394,6 +395,15 @@
                         this.user_profile = res.data;
                         this.selected_movies = this.user_profile;
 
+                        const h = this.$createElement;
+                        this.$message({
+                            type: 'success' ,
+                            message: h('p', null, [
+                                h('span', null, 'Your recommend update '),
+                                h('i', { style: 'color: teal' }, 'success')
+                            ])
+                        });
+
                         // Round 2 
                         round = [2]
                         axios.post(this.baseurl + "/api/record_round", round).then((res) => {
@@ -411,6 +421,14 @@
                 update_profile: function () {
                     axios.post(this.baseurl + "/api/profile", this.user_profile).then((res) => {
                         this.user_profile = res.data;
+                        const h = this.$createElement;
+                        this.$message({
+                            type: 'success' ,
+                            message: h('p', null, [
+                                h('span', null, 'Your rating update '),
+                                h('i', { style: 'color: teal' }, 'success')
+                            ])
+                        });
                     });
                 },
 
