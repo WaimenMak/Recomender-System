@@ -173,3 +173,5 @@ dmypy.json
 cython_debug/
 
 .idea 
+
+recDatabase.db
