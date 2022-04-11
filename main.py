@@ -60,7 +60,7 @@ model = Word2Vec.load('movies_embedding.model')
 
 # This is the new genre list -> for movie_data_new.csv
 genre_list = ['Action', 'Adventure', 'Animation', 'Children', 'Comedy', 'Crime', 'Documentary', 'Drama', 'Fantasy',
-    'Film-Noir', 'Horror', 'IMAX', 'Musical', 'Mystery', 'Romance', 'Sci-Fi', 'Thriller', 'War', 'Western']
+              'Film-Noir', 'Horror', 'IMAX', 'Musical', 'Mystery', 'Romance', 'Sci-Fi', 'Thriller', 'War', 'Western']
 
 """
 =================== Body =============================
@@ -133,7 +133,7 @@ def get_movies(firstinput: list):
     movie_TF_IDF_vector = pd.read_json("tfidf_mat.json")
     # s = set()
     for kw in keywords:
-        for item in movie_TF_IDF_vector[movie_TF_IDF_vector[kw]>0].movieId:
+        for item in movie_TF_IDF_vector[movie_TF_IDF_vector[kw] > 0].movieId:
             init_set.add(item)
     # try:
     print(len(init_set))
@@ -143,7 +143,8 @@ def get_movies(firstinput: list):
     print(res)
     results.loc[:, 'score'] = 0
 
-    results = results.loc[:, ['movie_id', 'movie_title', 'poster_url', 'score']]
+    results = results.loc[:, ['movie_id',
+                              'movie_title', 'poster_url', 'score']]
 
     return json.loads(results.to_json(orient="records"))
     # except:
@@ -153,9 +154,32 @@ def get_movies(firstinput: list):
 # == == == == == == == == == 3. Get Recommendation
 
 
+# This function is trying to fix the problem of duplicated data in content-based method.
+def get_right_data(movies: list):
+    movie_stored = []
+    for movie in movies:
+        if movie.score > 0:
+            movie_stored.append(movie)
+
+    restest = [int(movie.movie_id) for movie in movie_stored]
+    rec_movies = data.loc[data['movie_id'].isin(restest)]
+
+    if 'score' not in rec_movies.columns:
+        rec_movies.loc[:, 'score'] = 0
+
+    for i in movie_stored:
+        rec_movies.score[rec_movies.movie_id == i.movie_id] = i.score
+
+    rec_movies["user_id"] = user
+    rec_movies["algorithm"] = algo_selected
+    rec_movies["round"] = round
+
+    return rec_movies
+
+
 @app.post("/api/recommend")
 def get_recommend(movies: List[Movie]):
-# def get_recommend(movies: List[Movie], algorithm:int, user_id,round ):
+    # def get_recommend(movies: List[Movie], algorithm:int, user_id,round ):
     """
     # Summary:
     - this function is called each time a new recommendation is made -> as input a set of movies with ratings is provided
@@ -181,6 +205,12 @@ def get_recommend(movies: List[Movie]):
 
     # TODO: at the moment the user id is hardcoded -> should be provided by the function call
 
+    rec_movies = get_right_data(movies)
+
+    # move the part of storing user info from api/profile to here
+    update_user_profile_in_database(
+        rec_movies.loc[:, ['user_id', 'movie_id', 'score', 'round', 'algorithm']], user)
+
     print("now round is", round)
     print("type======", type(round))
 
@@ -199,8 +229,8 @@ def get_recommend(movies: List[Movie]):
 
 
 @app.post("/api/record_round")
-async def rec_round(round_fronted:list):
-    global round 
+async def rec_round(round_fronted: list):
+    global round
     round = int(round_fronted[0])
 
 
@@ -231,6 +261,7 @@ async def get_similar_items(item_id):
             1. similarityList: 5 most similar items for a given algorithm
 
     """
+
     if algo_selected == "1":
         # Here the content based algorithm is called
         print("algo1--- -> content based approach")
@@ -240,16 +271,13 @@ async def get_similar_items(item_id):
         # TODO: implement item-to-factor algorithm
         print("algo2=== 1")
         result = item2vec_get_items(item_id, data, model)
-        print("result number:",result)
+        print("result number:", result)
 
     return result
 
 
-
-
-
-# TODO: -> Refresh must be changed to the new dataset -> else it will not be working 
-# Each refresh: returns just a new list of moview based on the initial keyword selection 
+# TODO: -> Refresh must be changed to the new dataset -> else it will not be working
+# Each refresh: returns just a new list of moview based on the initial keyword selection
 # Always returns 18 movies
 
 # @app.post("/api/refresh")
@@ -268,13 +296,14 @@ async def get_similar_items(item_id):
 @app.post("/api/refresh")
 def get_movies_again(stored_set=init_set):
     try:
-    # print(stored_set)
+        # print(stored_set)
         res = np.random.choice(list(stored_set), 18, replace=True)
         print(res)
         results = data[data['movie_id'].isin(res)]
         results.loc[:, 'score'] = 0
         print(len(results))
-        results = results.loc[:, ['movie_id', 'movie_title',  'poster_url', 'score']]
+        results = results.loc[:, ['movie_id',
+                                  'movie_title',  'poster_url', 'score']]
         return json.loads(results.to_json(orient="records"))
     except:
         # print(len(stored_set))
@@ -289,11 +318,12 @@ def get_profile(movies: List[Movie]):
     for movie in movies:
         if movie.score > 0:
             movie_stored.append(movie)
-    if len(movie_stored)==0:
+    if len(movie_stored) == 0:
         return None
-        
+
     restest = [int(movie.movie_id) for movie in movie_stored]
     rec_movies = data.loc[data['movie_id'].isin(restest)]
+
     if 'score' not in rec_movies.columns:
         rec_movies.loc[:, 'score'] = 0
 
@@ -301,47 +331,49 @@ def get_profile(movies: List[Movie]):
         rec_movies.score[rec_movies.movie_id == i.movie_id] = i.score
     rec_movies.loc[:, 'rating'] = 0
 
-    # Set the user_id 
-    rec_movies["user_id"]= user
-    rec_movies["algorithm"] = algo_selected
-    rec_movies["round"]= round
-    
+    # # Set the user_id
+    # rec_movies["user_id"]= user
+    # rec_movies["algorithm"] = algo_selected
+    # rec_movies["round"]= round
+
     results = rec_movies.loc[:, ['movie_id', 'movie_title',  'poster_url',
-                                   'score', 'rating']]
-    
+                                 'score', 'rating']]
 
     # TODO: Store the data in a database -> here in the end
-    update_user_profile_in_database(rec_movies.loc[:,['user_id', 'movie_id', 'score', 'round', 'algorithm']], user)
+    # update_user_profile_in_database(rec_movies.loc[:,['user_id', 'movie_id', 'score', 'round', 'algorithm']], user)
 
     return json.loads(results.to_json(orient="records"))
 
 
-def update_user_profile_in_database(movies: List[Movie], user_id: int): 
-    # 1. Buld delete everything from the old connection 
+def update_user_profile_in_database(movies: List[Movie], user_id: int):
+    # 1. Buld delete everything from the old connection
     sqlConnection = SQLiteConnection()
     con = sqlConnection.connection
-    try: 
-        #Get the old user data that is already in the table 
-        old_data = pd.read_sql_query(f"SELECT * from runtime_u_data WHERE user_id={user_id}", con)
+    try:
+        # Get the old user data that is already in the table
+        old_data = pd.read_sql_query(
+            f"SELECT * from runtime_u_data WHERE user_id={user_id}", con)
 
-        # if old_data.shape[0]!=0: 
-        #     old_data_movie_id = set(old_data["movie_id"])
-        #     new_data_movie_id = set(movies["movie_id"])
-        #     overlap = old_data_movie_id & new_data_movie_id
-        movies[movies["movie_id"].isin(overlap)]["movie_id"] = old_data[old_data["movie_id"].isin(overlap)]["round"].values
-        sql = f'DELETE FROM runtime_u_data WHERE user_id={user_id}'
-        cur = con.cursor()
-        cur.execute(sql)
+        if old_data.shape[0] != 0:
+            old_data_movie_id = set(old_data["movie_id"])
+            new_data_movie_id = set(movies["movie_id"])
+            overlap = old_data_movie_id & new_data_movie_id
+            movies[movies["movie_id"].isin(
+                overlap)]["movie_id"] = old_data[old_data["movie_id"].isin(overlap)]["round"].values
+            sql = f'DELETE FROM runtime_u_data WHERE user_id={user_id}'
+            cur = con.cursor()
+            cur.execute(sql)
 
-        movies.to_sql(name='runtime_u_data',con=con, if_exists='append', index=False)
+        movies.to_sql(name='runtime_u_data', con=con,
+                      if_exists='append', index=False)
         con.commit()
 
-
-    except: 
-        # 2. Rollback in case of delete error 
+    except:
+        # 2. Rollback in case of delete error
         e = sys.exc_info()[0]
         con.rollback()
         print("Error: The update of the user profile did not work in the database")
+
 
 @app.post("/api/explain")
 def get_explaination(movies: List[Movie]):
@@ -351,8 +383,6 @@ def get_explaination(movies: List[Movie]):
     results = data.loc[data['movie_id'].isin(index)]
 
     return json.loads(results.to_json(orient="records"))
-
-
 
 
 @app.get("/api/guesslike/{movie_id}")
@@ -374,57 +404,57 @@ async def add_recommend(movie_id):
 
 
 @app.get("/api/ttest")
-async def get_ttest(): 
-    pass 
-    # 1. Reads the data from the database 
-    # 
+async def get_ttest():
+    pass
+    # 1. Reads the data from the database
+    #
     sqlConnection = SQLiteConnection()
     con = sqlConnection.connection
 
-    user_preference_df = pd.read_sql_query(f"SELECT * from runtime_u_data", con)    
+    user_preference_df = pd.read_sql_query(
+        f"SELECT * from runtime_u_data", con)
 
-    # 2. Calculate t-Test with the data 
-    #    2.1 Algo 1 vs. Algo 2 
-    #    2.2. First Round vs Second Round 
+    # 2. Calculate t-Test with the data
+    #    2.1 Algo 1 vs. Algo 2
+    #    2.2. First Round vs Second Round
 
     print(user_preference_df)
 
-    algo1_filtered_df = user_preference_df[user_preference_df["algorithm"]==0]
-    algo2_filtered_df = user_preference_df[user_preference_df["algorithm"]==1]
+    algo1_filtered_df = user_preference_df[user_preference_df["algorithm"] == 0]
+    algo2_filtered_df = user_preference_df[user_preference_df["algorithm"] == 1]
 
+    firstround_filtered_df = user_preference_df[user_preference_df["round"] == 1]
+    secondround_filtered_df = user_preference_df[user_preference_df["round"] == 2]
 
-    firstround_filtered_df = user_preference_df[user_preference_df["round"]==1]
-    secondround_filtered_df = user_preference_df[user_preference_df["round"]==2]
+    # 3. Calculate average value per user
+    algo1_filtered_df_average = algo1_filtered_df.groupby("user_id")[
+        "score"].mean()
+    algo2_filtered_df_average = algo2_filtered_df.groupby("user_id")[
+        "score"].mean()
+    firstround_filtered_df_average = firstround_filtered_df.groupby("user_id")[
+        "score"].mean()
+    secondround_filtered_df_average = secondround_filtered_df.groupby("user_id")[
+        "score"].mean()
 
-
-    #3. Calculate average value per user 
-    algo1_filtered_df_average = algo1_filtered_df.groupby("user_id")["score"].mean()
-    algo2_filtered_df_average = algo2_filtered_df.groupby("user_id")["score"].mean()
-    firstround_filtered_df_average = firstround_filtered_df.groupby("user_id")["score"].mean()
-    secondround_filtered_df_average = secondround_filtered_df.groupby("user_id")["score"].mean()
-
-
-
-    t_test_within_algo = ttest_ind(algo1_filtered_df_average, algo2_filtered_df_average)
-    t_test_within_rounds_algo = ttest_ind(firstround_filtered_df_average, secondround_filtered_df_average)
-
+    t_test_within_algo = ttest_ind(
+        algo1_filtered_df_average, algo2_filtered_df_average)
+    t_test_within_rounds_algo = ttest_ind(
+        firstround_filtered_df_average, secondround_filtered_df_average)
 
     ret = {
-        "algo1_results":list(algo1_filtered_df_average.values),
-        "algo2_results":list(algo2_filtered_df_average.values), 
-        "firstround_results":list(firstround_filtered_df_average.values), 
-        "secondround_results":list(secondround_filtered_df_average.values), 
-        "t_test_within_algo_statistic":float( t_test_within_algo[0]), 
-        "t_test_within_algo_p_value": float(t_test_within_algo[1]), 
-        "t_test_within_rounds_statistic": float(t_test_within_rounds_algo[0]), 
-        "t_test_within_rounds_p_value": float(t_test_within_rounds_algo[1]), 
+        "algo1_results": list(algo1_filtered_df_average.values),
+        "algo2_results": list(algo2_filtered_df_average.values),
+        "firstround_results": list(firstround_filtered_df_average.values),
+        "secondround_results": list(secondround_filtered_df_average.values),
+        "t_test_within_algo_statistic": float(t_test_within_algo[0]),
+        "t_test_within_algo_p_value": float(t_test_within_algo[1]),
+        "t_test_within_rounds_statistic": float(t_test_within_rounds_algo[0]),
+        "t_test_within_rounds_p_value": float(t_test_within_rounds_algo[1]),
     }
-
-
 
     return json.loads(simplejson.dumps(ret, ignore_nan=True))
     # 3. For the visualisation of the result: -> 4 Charts are being displayed ->
-    # Return Object should look like this: 
+    # Return Object should look like this:
     # alg_comparision_algo1: [7.4 ; 4.5; 9.5 ...]
     # alg_comparision_algo2: [7.4 ; 2.5; 5.5 ...]
     # first_round_avg: [4.2, 5.0, ...]
@@ -432,10 +462,6 @@ async def get_ttest():
     # ttest_within_algo: 0.05
     # ttest_within_round: 0.07
 
-    # Each List in the above object: e.g  [7.4 ; 4.5; 9.5 ...] -> stores all the average ratings of the recommendations for each user 
-    
-    
-
-
+    # Each List in the above object: e.g  [7.4 ; 4.5; 9.5 ...] -> stores all the average ratings of the recommendations for each user
 
     #
