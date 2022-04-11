@@ -409,13 +409,19 @@
             </div>
             <div class="tile is-child box">
               <div>TODO: Display the Results of the t-test</div>
+              <tabl>
+
+                <tr> <td>Test 1 </td> </tr>
+                <tr> <td>Test 2 1 </td> </tr>
+
+              </tabl>
             </div>
           </div>
         </div>
       </div>
     </section>
 </body>
-
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script>
   //Measuring the time from start to end it takes for the user to complete the survey
   var startTime;
@@ -433,20 +439,26 @@
 
   }
 
-  async function updateStatistics() {
-    var response = await fetch("http://127.0.0.1:8000/api/ttest", {
-      method: "GET",
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-    });
+  var data;
+ async function updateStatistics() {
+    var response = axios.get("http://127.0.0.1:8000/api/ttest").then((res) => {
+      this.data =  res.data;
 
-    var data = await response.json()
 
-    var algo1_results = data.algo1_results;
-    var algo2_results = data.algo2_results;
+      
+      
+
+    var algo1_results =  data.algo1_results;
+    var algo2_results =  data.algo2_results;
     var firstround_results = data.firstround_results;
     var secondround_results = data.secondround_results;
+
+
+    // Display this data on the website 
+    var t_test_within_algo_statistic = data.t_test_within_algo_statistic
+    var t_test_within_algo_p_value = data.t_test_within_algo_p_value
+    var t_test_within_rounds_statistic = data.t_test_within_rounds_statistic
+    var t_test_within_rounds_p_values = data.t_test_within_rounds_p_values
 
     // var genderResults = data.genderResult;
     // var vacationResults = data.vacationResult;
@@ -469,6 +481,7 @@
     updateChart(round1Chart, firstround_results_keys, firstround_results_values)
     updateChart(round2Chart, secondround_results_keys, secondround_results_values)
 
+    });
 
   }
 

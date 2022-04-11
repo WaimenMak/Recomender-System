@@ -23,6 +23,9 @@ from utils import item_representation_based_movie_plots
 from database.database_connection import SQLiteConnection
 import sys
 
+import simplejson
+
+
 import recommendationAlgorithms.content_based_recommendation as content_based
 from recommendationAlgorithms.item_to_vectore_reommendation import item2vec, item2vec_get_items
 
@@ -243,19 +246,6 @@ async def get_similar_items(item_id):
 
 
 
-# == == == == == == == == == 5. Update the already rated items 
-@app.post("/api/update_recommend/{item_id}")
-async def update_recommend(item_id, algorithm: int, round: int):
-    pass
-
-
-# == == == == == == == == == 6. Remove the already rated items 
-@app.delete("/api/delete_recommend/{item_id}")
-async def update_recommend(item_id, algorithm: int, round: int ):
-    pass
-    # 1. Remove the entry from the database 
-    # 2. Recalculate the recommendation list and return to the user 
-
 
 
 # TODO: -> Refresh must be changed to the new dataset -> else it will not be working 
@@ -331,9 +321,17 @@ def update_user_profile_in_database(movies: List[Movie], user_id: int):
     sqlConnection = SQLiteConnection()
     con = sqlConnection.connection
     try: 
-        sql = f'DELETE FROM runtime_u_data WHERE user_id={user_id}'
-        cur = con.cursor()
-        cur.execute(sql)
+        #Get the old user data that is already in the table 
+        old_data = pd.read_sql_query(f"SELECT * from runtime_u_data WHERE user_id={user_id}", con)
+
+        if old_data.shape[0]!=0: 
+            old_data_movie_id = set(old_data["movie_id"])
+            new_data_movie_id = set(movies["movie_id"])
+            overlap = old_data_movie_id & new_data_movie_id
+            movies[movies["movie_id"].isin(overlap)]["movie_id"] = old_data[old_data["movie_id"].isin(overlap)]["round"].values
+            sql = f'DELETE FROM runtime_u_data WHERE user_id={user_id}'
+            cur = con.cursor()
+            cur.execute(sql)
 
         movies.to_sql(name='runtime_u_data',con=con, if_exists='append', index=False)
         con.commit()
@@ -423,7 +421,8 @@ async def get_ttest():
     }
 
 
-    return json.loads(json.dumps(ret))
+
+    return json.loads(simplejson.dumps(ret, ignore_nan=True))
     # 3. For the visualisation of the result: -> 4 Charts are being displayed ->
     # Return Object should look like this: 
     # alg_comparision_algo1: [7.4 ; 4.5; 9.5 ...]

@@ -24,6 +24,7 @@ six==1.16.0
 sniffio==1.2.0
 starlette==0.17.1
 surprise==0.1
+simplejson==3.17.6
 typing_extensions==4.0.1
 uvicorn==0.17.1
 gunicorn
