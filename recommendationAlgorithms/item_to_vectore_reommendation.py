@@ -30,14 +30,15 @@ def user_add(iid, score):
         for k in data_input:
             wf.writerow(k)
 
-def store_result(store_list, mid, title, exp, poster, origin):
+def store_result(store_list, mid, title, exp, poster, origin, sim):
   entry = {
       "movie_id": int(mid),
       "movie_title": title,
       "score": 0,
       "poster_url": poster,
       "explaination": exp,
-      "origin": origin
+      "origin": origin,
+      "sim": sim
   }
   store_list.append(entry)
   return store_list
@@ -68,8 +69,8 @@ def item2vec(movies, data, model, user_id, init_set, n, round):
             sim = model.wv.most_similar([str(movie.movie_id)], topn=20)
             for item in sim:
                 # print(item[0])
-                if item[1] < 0.7:
-                    continue
+                # if item[1] < 0.7:
+                #     continue
                 if int(item[0]) in not_interest:
                     continue
                 if len(data[data["movie_id"] == int(item[0])]) > 0:
@@ -78,8 +79,9 @@ def item2vec(movies, data, model, user_id, init_set, n, round):
                     poster = data.loc[data['movie_id']==int(item[0]),'poster_url']
                     origin = data.loc[data['movie_id']==movie.movie_id,'poster_url']
                   # s.add(item[0])
-                    store_result(ls, item[0], title, exp, poster, origin)
+                    store_result(ls, item[0], title, exp, poster, origin, item[1])
                   # recommendation = temp.loc[temp['movieId']==item[0]]
+    # ls = sorted(ls, key=lambda e: e.__getitem__('sim'), reverse=True)
     m = len(ls)
     print(m)
 
@@ -87,10 +89,12 @@ def item2vec(movies, data, model, user_id, init_set, n, round):
         # res = np.random.choice(list(s), n)
         res = random.sample(ls, n)
         results = pd.DataFrame(res)
+        results = results.sort_values(by="sim", ascending=False)
         print("res1")
         return json.loads(results.to_json(orient="records"))
     elif m < n and m > 0:
         results = pd.DataFrame(ls)
+        results = results.sort_values(by="sim", ascending=False)
         print("res2")
         return json.loads(results.to_json(orient="records"))
     elif m == 0:
