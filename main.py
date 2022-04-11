@@ -134,7 +134,7 @@ def get_movies(firstinput: list):
             init_set.add(item)
     # try:
     print(len(init_set))
-    res = np.random.choice(list(init_set), 18, replace=True)
+    res = np.random.choice(list(init_set), 18, replace=False)
     print(init_set)
     results = data[data['movie_id'].isin(res)]
     print(res)

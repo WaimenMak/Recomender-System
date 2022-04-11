@@ -68,6 +68,8 @@ def item2vec(movies, data, model, user_id, init_set, n, round):
             sim = model.wv.most_similar([str(movie.movie_id)], topn=20)
             for item in sim:
                 # print(item[0])
+                if item[1] < 0.7:
+                    continue
                 if int(item[0]) in not_interest:
                     continue
                 if len(data[data["movie_id"] == int(item[0])]) > 0:
