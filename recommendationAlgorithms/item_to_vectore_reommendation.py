@@ -15,7 +15,7 @@ import csv
 import json
 from .content_based_recommendation import user_add_content_based_approach
 
-
+times = 0
 
 def user_add(iid, score):
     user = '944'
@@ -48,6 +48,8 @@ def item2vec(movies, data, model, user_id, init_set, n, round):
     # iid = str(sorted(movies, key=lambda i: i.score, reverse=True)[0].movie_id)
     # score = int(sorted(movies, key=lambda i: i.score, reverse=True)[0].score)
     if round > 1:
+        global times
+        times += 1
         print("now next round")
         finetune_model(movies, model)
         print("out")
@@ -81,13 +83,19 @@ def item2vec(movies, data, model, user_id, init_set, n, round):
                   # s.add(item[0])
                     store_result(ls, item[0], title, exp, poster, origin, item[1])
                   # recommendation = temp.loc[temp['movieId']==item[0]]
-    # ls = sorted(ls, key=lambda e: e.__getitem__('sim'), reverse=True)
+    ls = sorted(ls, key=lambda e: e.__getitem__('sim'), reverse=True)
     m = len(ls)
     print(m)
 
     if m > n:
         # res = np.random.choice(list(s), n)
-        res = random.sample(ls, n)
+        # res = random.sample(ls, n)
+        try:
+            res = ls[times*n: times*n + n]
+            print(f"times{times}")
+        except:
+            res = random.sample(ls, n)
+            print("sample")
         results = pd.DataFrame(res)
         results = results.sort_values(by="sim", ascending=False)
         print("res1")
