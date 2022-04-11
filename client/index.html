@@ -375,15 +375,16 @@
                     // 1. store the movies rated in selected_movies:[]
                     this.selected_movies = this.selected_movies.concat(this.movies);
                     // 2. request the backend, and remove the movies which not be rated, and store the user profile in backend
-                    axios.post(this.baseurl + "/api/profile", this.selected_movies).then((res) => {
-                        // 3.update the user profile in fronted
-                        this.user_profile = res.data;
-                        // 4. update the seleted movie with user profile
-                        this.selected_movies = this.user_profile;
-                        // 5. request the recommend list with updated user profile
-                        // Round = 1 
-                        round = [1];
-                        axios.post(this.baseurl + "/api/record_round", round).then((res) => {
+                    round = [1];
+                    axios.post(this.baseurl + "/api/record_round", round).then((res) => {
+                        axios.post(this.baseurl + "/api/profile", this.selected_movies).then((res) => {
+                            // 3.update the user profile in fronted
+                            this.user_profile = res.data;
+                            // 4. update the seleted movie with user profile
+                            this.selected_movies = this.user_profile;
+                            // 5. request the recommend list with updated user profile
+                            // Round = 1 
+
                             // payload = { "movies": this.selected_movies, "round": "1" };
                             // console.log(payload)
                             axios.post(this.baseurl + "/api/recommend", this.user_profile).then((res) => {
@@ -398,22 +399,23 @@
                     this.selected_movies = this.selected_movies.concat(this.recommended);
                     // payload = { "movies": this.selected_movies, "round": 2 }
                     // console.log(payload)
-                    axios.post(this.baseurl + "/api/profile", this.selected_movies).then((res) => {
-                        this.user_profile = res.data;
-                        this.selected_movies = this.user_profile;
+                    round = [2]
+                    axios.post(this.baseurl + "/api/record_round", round).then((res) => {
+                        axios.post(this.baseurl + "/api/profile", this.selected_movies).then((res) => {
+                            this.user_profile = res.data;
+                            this.selected_movies = this.user_profile;
 
-                        const h = this.$createElement;
-                        this.$message({
-                            type: 'success',
-                            message: h('p', null, [
-                                h('span', null, 'Your recommend update '),
-                                h('i', { style: 'color: teal' }, 'success')
-                            ])
-                        });
+                            const h = this.$createElement;
+                            this.$message({
+                                type: 'success',
+                                message: h('p', null, [
+                                    h('span', null, 'Your recommend update '),
+                                    h('i', { style: 'color: teal' }, 'success')
+                                ])
+                            });
 
-                        // Round 2 
-                        round = [2]
-                        axios.post(this.baseurl + "/api/record_round", round).then((res) => {
+                            // Round 2 
+
                             // payload = { "movies": this.selected_movies, "round": "1" };
                             axios.post(this.baseurl + "/api/recommend", this.user_profile).then((res) => {
                                 this.recommended = res.data;
