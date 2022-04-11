@@ -190,6 +190,9 @@
                             <el-image style="width: 100%;height:240px;" :src="o.poster_url" fit="cover"></el-image>
                             <h4 style="padding:0 10px;margin:0">{{o.movie_title}}</h4>
                             <h6 style="padding:0 10px;margin:0.5em">{{ o.release_date }}</h6>
+                            <!-- focus -->
+                            <el-rate style="padding:10px 10px;" v-model="o.score" :colors="colors">
+                            </el-rate>
                         </el-col>
                         <el-col :span="2">
                         </el-col>
