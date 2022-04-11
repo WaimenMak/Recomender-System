@@ -155,7 +155,7 @@ def get_movies(firstinput: list):
 
 
 # This function is trying to fix the problem of duplicated data in content-based method.
-def get_right_data(movies: list):
+def get_right_data(movies: List[Movie]):
     movie_stored = []
     for movie in movies:
         if movie.score > 0:
