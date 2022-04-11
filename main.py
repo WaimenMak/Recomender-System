@@ -324,14 +324,14 @@ def update_user_profile_in_database(movies: List[Movie], user_id: int):
         #Get the old user data that is already in the table 
         old_data = pd.read_sql_query(f"SELECT * from runtime_u_data WHERE user_id={user_id}", con)
 
-        if old_data.shape[0]!=0: 
-            old_data_movie_id = set(old_data["movie_id"])
-            new_data_movie_id = set(movies["movie_id"])
-            overlap = old_data_movie_id & new_data_movie_id
-            movies[movies["movie_id"].isin(overlap)]["movie_id"] = old_data[old_data["movie_id"].isin(overlap)]["round"].values
-            sql = f'DELETE FROM runtime_u_data WHERE user_id={user_id}'
-            cur = con.cursor()
-            cur.execute(sql)
+        # if old_data.shape[0]!=0: 
+        #     old_data_movie_id = set(old_data["movie_id"])
+        #     new_data_movie_id = set(movies["movie_id"])
+        #     overlap = old_data_movie_id & new_data_movie_id
+        movies[movies["movie_id"].isin(overlap)]["movie_id"] = old_data[old_data["movie_id"].isin(overlap)]["round"].values
+        sql = f'DELETE FROM runtime_u_data WHERE user_id={user_id}'
+        cur = con.cursor()
+        cur.execute(sql)
 
         movies.to_sql(name='runtime_u_data',con=con, if_exists='append', index=False)
         con.commit()
