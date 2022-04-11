@@ -316,7 +316,7 @@ def get_profile(movies: List[Movie]):
     rec_movies["algorithm"] = algo_selected
     rec_movies["round"]= 2
     
-    results = rec_movies.loc[:, ['movie_id', 'movie_title',
+    results = rec_movies.loc[:, ['movie_id', 'movie_title',  'poster_url',
                                    'score', 'rating']]
     
 
