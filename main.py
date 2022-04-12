@@ -424,7 +424,12 @@ async def get_ttest():
     algo2_filtered_df = user_preference_df[user_preference_df["algorithm"] == 1]
 
     firstround_filtered_df = user_preference_df[user_preference_df["round"] == 1]
-    secondround_filtered_df = user_preference_df[user_preference_df["round"] == 2]
+    secondround_filtered_df = user_preference_df[user_preference_df["round"] == 1]
+
+    firstround_filtered_df_algo1 = user_preference_df[(user_preference_df["round"] == 1) & (user_preference_df["algorithm"]==0)]
+    secondround_filtered_df_algo1 = user_preference_df[(user_preference_df["round"] == 2) &( user_preference_df["algorithm"]==0)]
+    firstround_filtered_df_algo2 = user_preference_df[(user_preference_df["round"] == 1) & (user_preference_df["algorithm"]==1)]
+    secondround_filtered_df_algo2= user_preference_df[(user_preference_df["round"] == 2 )& (user_preference_df["algorithm"]==1)]
 
     # 3. Calculate average value per user
     algo1_filtered_df_average = algo1_filtered_df.groupby("user_id")[
@@ -436,10 +441,24 @@ async def get_ttest():
     secondround_filtered_df_average = secondround_filtered_df.groupby("user_id")[
         "score"].mean()
 
+    firstround_filtered_df__algo1_average = firstround_filtered_df_algo2.groupby("user_id")[
+        "score"].mean()
+    secondround_filtered_df__algo1_average = secondround_filtered_df_algo2.groupby("user_id")[
+        "score"].mean()
+
+
+    firstround_filtered_df__algo2_average = firstround_filtered_df_algo1.groupby("user_id")[
+        "score"].mean()
+    secondround_filtered_df__algo2_average = secondround_filtered_df_algo2.groupby("user_id")[
+        "score"].mean()
+
     t_test_within_algo = ttest_ind(
         algo1_filtered_df_average, algo2_filtered_df_average)
-    t_test_within_rounds_algo = ttest_ind(
-        firstround_filtered_df_average, secondround_filtered_df_average)
+    t_test_within_rounds_algo1 = ttest_ind(
+        firstround_filtered_df__algo1_average, secondround_filtered_df__algo1_average)
+
+    t_test_within_rounds_algo2 = ttest_ind(
+        firstround_filtered_df__algo2_average, secondround_filtered_df__algo2_average)
 
     ret = {
         "algo1_results": list(algo1_filtered_df_average.values),
@@ -448,8 +467,10 @@ async def get_ttest():
         "secondround_results": list(secondround_filtered_df_average.values),
         "t_test_within_algo_statistic": float(t_test_within_algo[0]),
         "t_test_within_algo_p_value": float(t_test_within_algo[1]),
-        "t_test_within_rounds_statistic": float(t_test_within_rounds_algo[0]),
-        "t_test_within_rounds_p_value": float(t_test_within_rounds_algo[1]),
+        "t_test_within_rounds_algo1_statistic": float(t_test_within_rounds_algo1[0]),
+        "t_test_within_rounds_algo1_p_value": float(t_test_within_rounds_algo2[1]),
+        "t_test_within_rounds_algo2_statistic": float(t_test_within_rounds_algo2[0]),
+        "t_test_within_rounds_algo2_p_value": float(t_test_within_rounds_algo2[1]),
     }
 
     return json.loads(simplejson.dumps(ret, ignore_nan=True))

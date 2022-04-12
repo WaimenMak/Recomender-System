@@ -1,40 +1,30 @@
 # Recomender-System
 
+This repository has been implemented during the project of COMP 7240. 
+
+If you want to start the recommendation system there are two possible ways: 
 
 
-# How to add heroku: 
-1. heroku git:remote -a comp7240-group-project-app
-https://comp7240-group-project-app.herokuapp.com/ 
+## 1. Start via terminal 
+#### Start the frontend
+1. Navigate to /client -> cd client 
+2. npm install // this installs the depencencies for the frontend 
+3. node app.js  // this launches the frontend express server 
 
-2. How to change the stack in Heroku to deploy containers (only necessary once)
-heroku stack:set container -a comp7240-group-project-app  
-
-# Docker Client
-1. Build client Dockerfile: 
-cd client 
-docker build . -t recommendation_project/client
-
-2. Start container 
-docker run -p 3000:3000 -d recommendation_project/client
-     
-3. Enter container for debug reasons: 
-docker exec -it <container id> /bin/bash
+-> when these steps are successful you can see the index.html file under localhost:3000/ 
 
 
-
-
-# Docker Backend
-1. Build server Dockerfile: 
-docker build . -t recommendation_project/server2
-
-
-2. Start conatiner
-docker run -p 8000:8000 -d recommendation_project/server2
-
-3. Enter container for debug reasons: 
-docker exec -it <container id> /bin/bash
+#### Start the backend 
+1. Navigate to root directory of the project 
+2. pip install -r requirements.txt   // to install the requirements 
+3. uvicorn main:app                  // to start the 
 
 
 
-# Docker Registry name: 
-comp7240cr 
+## 2. Start via docker 
+1. docker-compose up --build -d   //This will generate the images necessary for the dockerfiles -> download can take a little 
+2. docker-compose up   // To start the containers without build 
+3. docker-compose down //To stop the containers 
+
+
+

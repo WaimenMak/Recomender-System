@@ -430,12 +430,20 @@
                 <td id="within_algo_p_value"></td>
               </tr>
               <tr> 
-                <td>T-Test: Within Rounds - Statistik </td>
-                <td id="within_rounds_statistik"></td>
+                <td>T-Test Factorization Algorihtm: Within Rounds - Statistik </td>
+                <td id="within_rounds_algo1_statistic"></td>
               </tr>
               <tr> 
-                <td>T-Test: Within Rounds - P-Value </td>
-                <td id="within_rounds_p_value"></td>
+                <td>T-Test Factorization Algorithm: Within Rounds - P-Value </td>
+                <td id="within_rounds_algo1_p_value"></td>
+              </tr>
+              <tr> 
+                <td>T-Test Content-based Algorihtm: Within Rounds - Statistik </td>
+                <td id="within_rounds_algo2_statistic"></td>
+              </tr>
+              <tr> 
+                <td>T-Test Content-based Algorithm: Within Rounds - P-Value </td>
+                <td id="within_rounds_algo2_p_value"></td>
               </tr>
             </tbody>
             
@@ -483,14 +491,17 @@
       // Display this data on the website 
       var t_test_within_algo_statistic = data.t_test_within_algo_statistic
       var t_test_within_algo_p_value = data.t_test_within_algo_p_value
-      var t_test_within_rounds_statistic = data.t_test_within_rounds_statistic
-      var t_test_within_rounds_p_value = data.t_test_within_rounds_p_value
-
+      var t_test_within_rounds_algo1_statistic = data.t_test_within_rounds_algo1_statistic
+      var t_test_within_rounds_algo1_p_value = data.t_test_within_rounds_algo1_p_value
+      var t_test_within_rounds_algo2_statistic = data.t_test_within_rounds_algo2_statistic
+      var t_test_within_rounds_algo2_p_value = data.t_test_within_rounds_algo2_p_value
 
       document.getElementById("within_algo_statistic").innerHTML = t_test_within_algo_statistic; 
       document.getElementById("within_algo_p_value").innerHTML = t_test_within_algo_p_value; 
-      document.getElementById("within_rounds_statistik").innerHTML = t_test_within_rounds_statistic; 
-      document.getElementById("within_rounds_p_value").innerHTML = t_test_within_rounds_p_value; 
+      document.getElementById("within_rounds_algo1_statistic").innerHTML = t_test_within_rounds_algo1_statistic; 
+      document.getElementById("within_rounds_algo1_p_value").innerHTML = t_test_within_rounds_algo1_p_value; 
+      document.getElementById("within_rounds_algo2_statistic").innerHTML = t_test_within_rounds_algo2_statistic; 
+      document.getElementById("within_rounds_algo2_p_value").innerHTML = t_test_within_rounds_algo2_p_value; 
       // var genderResults = data.genderResult;
       // var vacationResults = data.vacationResult;
       console.log(data)
