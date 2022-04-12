@@ -421,33 +421,29 @@ async def get_ttest():
     print(user_preference_df)
 
     algo1_filtered_df = user_preference_df[user_preference_df["algorithm"] == 0]
-    algo2_filtered_df = user_preference_df[user_preference_df["algorithm"] == 1]
+    algo2_filtered_df = user_preference_df[user_preference_df["algorithm"].isin(set([1,2]))]
 
     firstround_filtered_df = user_preference_df[user_preference_df["round"] == 1]
     secondround_filtered_df = user_preference_df[user_preference_df["round"] == 1]
 
     firstround_filtered_df_algo1 = user_preference_df[(user_preference_df["round"] == 1) & (user_preference_df["algorithm"]==0)]
     secondround_filtered_df_algo1 = user_preference_df[(user_preference_df["round"] == 2) &( user_preference_df["algorithm"]==0)]
-    firstround_filtered_df_algo2 = user_preference_df[(user_preference_df["round"] == 1) & (user_preference_df["algorithm"]==1)]
-    secondround_filtered_df_algo2= user_preference_df[(user_preference_df["round"] == 2 )& (user_preference_df["algorithm"]==1)]
+    firstround_filtered_df_algo2 = user_preference_df[(user_preference_df["round"] == 1) & (user_preference_df["algorithm"]==2)]
+    secondround_filtered_df_algo2= user_preference_df[(user_preference_df["round"] == 2 )& (user_preference_df["algorithm"]==2)]
 
     # 3. Calculate average value per user
     algo1_filtered_df_average = algo1_filtered_df.groupby("user_id")[
         "score"].mean()
     algo2_filtered_df_average = algo2_filtered_df.groupby("user_id")[
         "score"].mean()
-    firstround_filtered_df_average = firstround_filtered_df.groupby("user_id")[
-        "score"].mean()
-    secondround_filtered_df_average = secondround_filtered_df.groupby("user_id")[
-        "score"].mean()
 
-    firstround_filtered_df__algo1_average = firstround_filtered_df_algo2.groupby("user_id")[
+    firstround_filtered_df__algo1_average = firstround_filtered_df_algo1.groupby("user_id")[
         "score"].mean()
-    secondround_filtered_df__algo1_average = secondround_filtered_df_algo2.groupby("user_id")[
+    secondround_filtered_df__algo1_average = secondround_filtered_df_algo1.groupby("user_id")[
         "score"].mean()
 
 
-    firstround_filtered_df__algo2_average = firstround_filtered_df_algo1.groupby("user_id")[
+    firstround_filtered_df__algo2_average = firstround_filtered_df_algo2.groupby("user_id")[
         "score"].mean()
     secondround_filtered_df__algo2_average = secondround_filtered_df_algo2.groupby("user_id")[
         "score"].mean()
@@ -463,12 +459,14 @@ async def get_ttest():
     ret = {
         "algo1_results": list(algo1_filtered_df_average.values),
         "algo2_results": list(algo2_filtered_df_average.values),
-        "firstround_results": list(firstround_filtered_df_average.values),
-        "secondround_results": list(secondround_filtered_df_average.values),
+        "firstround_results_algo1": list(firstround_filtered_df__algo1_average.values),
+        "secondround_results_algo1": list(secondround_filtered_df__algo1_average.values),
+        "firstround_results_algo2": list(firstround_filtered_df__algo2_average.values),
+        "secondround_results_algo2": list(secondround_filtered_df__algo2_average.values),
         "t_test_within_algo_statistic": float(t_test_within_algo[0]),
         "t_test_within_algo_p_value": float(t_test_within_algo[1]),
         "t_test_within_rounds_algo1_statistic": float(t_test_within_rounds_algo1[0]),
-        "t_test_within_rounds_algo1_p_value": float(t_test_within_rounds_algo2[1]),
+        "t_test_within_rounds_algo1_p_value": float(t_test_within_rounds_algo1[1]),
         "t_test_within_rounds_algo2_statistic": float(t_test_within_rounds_algo2[0]),
         "t_test_within_rounds_algo2_p_value": float(t_test_within_rounds_algo2[1]),
     }
